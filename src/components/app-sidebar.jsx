@@ -134,8 +134,9 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
               <a href="#" className="flex justify-start items-center ml-2">
-                <FaDumbbell className="!size-8 text-blue-500" />
-                <span className="text-2xl text-white font-extrabold px-5 py-4">BeFAB</span>
+                {/* <FaDumbbell className="!size-8 text-blue-500" /> */}
+                <img src="/logo.png" alt="Logo" className="w-56 mx-auto py-2" />
+                {/* <span className="text-2xl text-white font-extrabold px-5 py-4">BeFAB</span> */}
               </a>
           </SidebarMenuItem>
         </SidebarMenu>

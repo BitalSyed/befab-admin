@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -7,16 +7,174 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import GroupTable from "@/components/group-table";
 import { GroupChart } from "@/components/group-chart";
 import Contributors from "@/components/group-contributors";
 import FlaggedContentQueue from "@/components/group-flagged";
 import { useNavigate } from "react-router-dom";
+import { API_URL, getCookie } from "@/components/cookieUtils";
+import { toast } from "react-toastify";
 
 const Groups = () => {
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const [allData, setAllData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [groupTypeFilter, setGroupTypeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [activeFilters, setActiveFilters] = useState([]);
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/groups`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setAllData(data);
+          setFilteredData(data);
+          setUsers(data);
+          console.log(data);
+        }
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
+
+  // Apply filters whenever search term, group type, or sort changes
+  useEffect(() => {
+    let result = [...allData];
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(
+        (group) =>
+          group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          group.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply group type filter
+    if (groupTypeFilter !== "all") {
+      result = result.filter((group) => {
+        if (groupTypeFilter === "active") {
+          return group.visibility === "public";
+        } else if (groupTypeFilter === "draft") {
+          return group.visibility === "private";
+        } else if (groupTypeFilter === "archived") {
+          // You might need to add an archived field to your group data
+          return group.isArchived === true;
+        }
+        return true;
+      });
+    }
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      if (sortBy === "newest") {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (sortBy === "oldest") {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      } else if (sortBy === "name-asc") {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === "name-desc") {
+        return b.name.localeCompare(a.name);
+      }
+      return 0;
+    });
+    
+    setFilteredData(result);
+    
+    // Update active filters for display
+    const filters = [];
+    if (searchTerm) filters.push(`Search: "${searchTerm}"`);
+    if (groupTypeFilter !== "all") filters.push(`Type: ${groupTypeFilter}`);
+    if (sortBy !== "newest") filters.push(`Sort: ${sortBy}`);
+    setActiveFilters(filters);
+  }, [allData, searchTerm, groupTypeFilter, sortBy]);
+
+  const handleRemoveFilter = (filterToRemove) => {
+    if (filterToRemove.startsWith("Search:")) {
+      setSearchTerm("");
+    } else if (filterToRemove.startsWith("Type:")) {
+      setGroupTypeFilter("all");
+    } else if (filterToRemove.startsWith("Sort:")) {
+      setSortBy("newest");
+    }
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setGroupTypeFilter("all");
+    setSortBy("newest");
+  };
+
+  function downloadCSV(data, filename = "groups.csv") {
+  if (!data || !data.length) {
+    console.error("No data to download");
+    return;
+  }
+
+  // Extract column headers (keys from first object, including nested handling if needed)
+  const headers = Object.keys(data[0]);
+
+  // Convert to CSV rows
+  const csvRows = [];
+
+  // Add header row
+  csvRows.push(headers.join(","));
+
+  // Add data rows
+  for (const row of data) {
+    const values = headers.map(header => {
+      let val = row[header];
+
+      // Handle nested object (like createdBy)
+      if (typeof val === "object" && val !== null) {
+        val = JSON.stringify(val); // flatten to JSON string
+      }
+
+      // Escape quotes and commas
+      if (typeof val === "string") {
+        val = `"${val.replace(/"/g, '""')}"`;
+      }
+
+      return val;
+    });
+    csvRows.push(values.join(","));
+  }
+
+  // Create CSV string
+  const csvString = csvRows.join("\n");
+
+  // Trigger file download in browser
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.setAttribute("hidden", "");
+  a.setAttribute("href", url);
+  a.setAttribute("download", filename);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
   return (
     <div className="flex flex-col gap-4 py-4 px-4 lg:px-6 md:gap-6 md:py-6">
       <div className="flex flex-col space-y-4">
@@ -28,8 +186,8 @@ const Groups = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            {/* Your SVG code remains the same */}
             <svg
+            onClick={() => downloadCSV(users)}
               width="114"
               height="44"
               viewBox="0 0 114 44"
@@ -62,7 +220,7 @@ const Groups = () => {
               />
             </svg>
 
-            <Button onClick={()=>navigate('/new-group')} className="bg-[#862633] text-white ml-auto py-5.25">
+            <Button onClick={() => navigate('/new-group')} className="bg-[#862633] text-white ml-auto py-5.25">
               <Plus className="w-4 h-4" />
               Create Group
             </Button>
@@ -77,92 +235,71 @@ const Groups = () => {
                 type="text"
                 placeholder="Search groups by name or description"
                 className="pl-10 w-80 lg:w-100 text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            {/* Fixed Select components */}
-            <Select>
+            <Select value={groupTypeFilter} onValueChange={setGroupTypeFilter}>
               <SelectTrigger className="w-[350px] text-sm">
                 <SelectValue placeholder="All Group Types" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Group Types</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="active">Active (Public)</SelectItem>
+                <SelectItem value="draft">Draft (Private)</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[350px] text-sm">
                 <SelectValue placeholder="Sort: Newest First" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Sort: Newest First</SelectItem>
-                <SelectItem value="user1">User 1</SelectItem>
-                <SelectItem value="user2">User 2</SelectItem>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center mt-5">
-            Filters:&emsp;
-            <div className="rounded-2xl px-2 py-1 bg-gray-100 text-gray-800 flex items-center text-sm">
-              Active{" "}
-              <svg
-                width="12"
-                height="15"
-                className="ml-1"
-                viewBox="0 0 12 15"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+          
+          {activeFilters.length > 0 && (
+            <div className="flex items-center mt-5 flex-wrap gap-2">
+              <span className="text-sm">Filters:</span>
+              {activeFilters.map((filter, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl px-3 py-1 bg-gray-100 text-gray-800 flex items-center text-sm"
+                >
+                  {filter}
+                  <X
+                    className="ml-1 h-3 w-3 cursor-pointer"
+                    onClick={() => handleRemoveFilter(filter)}
+                  />
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-blue-600 hover:text-blue-800"
+                onClick={clearAllFilters}
               >
-                <path
-                  d="M10.319 4.48481C10.6604 4.14334 10.6604 3.58879 10.319 3.24731C9.97749 2.90584 9.42294 2.90584 9.08147 3.24731L6.20491 6.1266L3.32563 3.25005C2.98416 2.90857 2.42961 2.90857 2.08813 3.25005C1.74666 3.59152 1.74666 4.14607 2.08813 4.48754L4.96742 7.36409L2.09087 10.2434C1.7494 10.5849 1.7494 11.1394 2.09087 11.4809C2.43234 11.8223 2.98689 11.8223 3.32836 11.4809L6.20491 8.60158L9.0842 11.4781C9.42567 11.8196 9.98022 11.8196 10.3217 11.4781C10.6632 11.1367 10.6632 10.5821 10.3217 10.2406L7.44241 7.36409L10.319 4.48481Z"
-                  fill="#6B7280"
-                />
-              </svg>
+                Clear all
+              </Button>
             </div>
-            <svg
-              width="88"
-              height="21"
-              className="ml-5"
-              viewBox="0 0 88 21"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.80982 17.3501C9.66369 17.3501 11.4416 16.6137 12.7525 15.3028C14.0634 13.9919 14.7998 12.214 14.7998 10.3601C14.7998 8.50625 14.0634 6.72832 12.7525 5.41744C11.4416 4.10656 9.66369 3.37012 7.80982 3.37012C5.95596 3.37012 4.17803 4.10656 2.86715 5.41744C1.55627 6.72832 0.819824 8.50625 0.819824 10.3601C0.819824 12.214 1.55627 13.9919 2.86715 15.3028C4.17803 16.6137 5.95596 17.3501 7.80982 17.3501ZM7.15451 12.7629V11.0154H5.40701C5.04386 11.0154 4.7517 10.7233 4.7517 10.3601C4.7517 9.99696 5.04386 9.7048 5.40701 9.7048H7.15451V7.9573C7.15451 7.59415 7.44667 7.30199 7.80982 7.30199C8.17298 7.30199 8.46514 7.59415 8.46514 7.9573V9.7048H10.2126C10.5758 9.7048 10.8679 9.99696 10.8679 10.3601C10.8679 10.7233 10.5758 11.0154 10.2126 11.0154H8.46514V12.7629C8.46514 13.1261 8.17298 13.4182 7.80982 13.4182C7.44667 13.4182 7.15451 13.1261 7.15451 12.7629Z"
-                fill="#0284C7"
-              />
-              <path
-                d="M24.5616 15.8604H22.9309L26.5949 5.67853H28.3698L32.0339 15.8604H30.4032L27.5246 7.52796H27.4451L24.5616 15.8604ZM24.835 11.8731H30.1248V13.1657H24.835V11.8731ZM36.1205 16.0095C35.504 16.0095 34.9538 15.8521 34.4699 15.5372C33.9894 15.219 33.6115 14.7666 33.3364 14.18C33.0646 13.59 32.9288 12.8824 32.9288 12.0571C32.9288 11.2318 33.0663 10.5258 33.3414 9.93919C33.6198 9.35254 34.001 8.90344 34.4849 8.59189C34.9688 8.28033 35.5173 8.12456 36.1305 8.12456C36.6044 8.12456 36.9856 8.2041 37.2739 8.36319C37.5656 8.51897 37.791 8.70126 37.9501 8.91007C38.1125 9.11887 38.2384 9.30282 38.3279 9.46191H38.4174V5.67853H39.9039V15.8604H38.4522V14.6721H38.3279C38.2384 14.8345 38.1092 15.0202 37.9401 15.229C37.7744 15.4378 37.5457 15.6201 37.254 15.7758C36.9624 15.9316 36.5845 16.0095 36.1205 16.0095ZM36.4486 14.7417C36.8762 14.7417 37.2375 14.6291 37.5324 14.4037C37.8307 14.175 38.0561 13.8585 38.2086 13.4541C38.3644 13.0497 38.4422 12.5791 38.4422 12.0422C38.4422 11.5119 38.366 11.0479 38.2136 10.6501C38.0611 10.2524 37.8374 9.9425 37.5424 9.72044C37.2474 9.49837 36.8828 9.38734 36.4486 9.38734C36.0012 9.38734 35.6283 9.50334 35.33 9.73535C35.0317 9.96736 34.8064 10.2839 34.6539 10.6849C34.5047 11.086 34.4302 11.5384 34.4302 12.0422C34.4302 12.5526 34.5064 13.0116 34.6589 13.4193C34.8113 13.827 35.0367 14.1501 35.335 14.3888C35.6366 14.6241 36.0078 14.7417 36.4486 14.7417ZM44.8842 16.0095C44.2677 16.0095 43.7175 15.8521 43.2336 15.5372C42.753 15.219 42.3752 14.7666 42.1001 14.18C41.8283 13.59 41.6924 12.8824 41.6924 12.0571C41.6924 11.2318 41.83 10.5258 42.1051 9.93919C42.3835 9.35254 42.7646 8.90344 43.2485 8.59189C43.7324 8.28033 44.281 8.12456 44.8941 8.12456C45.3681 8.12456 45.7492 8.2041 46.0376 8.36319C46.3293 8.51897 46.5546 8.70126 46.7137 8.91007C46.8761 9.11887 47.0021 9.30282 47.0916 9.46191H47.1811V5.67853H48.6676V15.8604H47.2159V14.6721H47.0916C47.0021 14.8345 46.8728 15.0202 46.7038 15.229C46.5381 15.4378 46.3094 15.6201 46.0177 15.7758C45.726 15.9316 45.3482 16.0095 44.8842 16.0095ZM45.2123 14.7417C45.6399 14.7417 46.0011 14.6291 46.2961 14.4037C46.5944 14.175 46.8198 13.8585 46.9723 13.4541C47.128 13.0497 47.2059 12.5791 47.2059 12.0422C47.2059 11.5119 47.1297 11.0479 46.9772 10.6501C46.8248 10.2524 46.601 9.9425 46.3061 9.72044C46.0111 9.49837 45.6465 9.38734 45.2123 9.38734C44.7649 9.38734 44.392 9.50334 44.0937 9.73535C43.7954 9.96736 43.57 10.2839 43.4176 10.6849C43.2684 11.086 43.1938 11.5384 43.1938 12.0422C43.1938 12.5526 43.2701 13.0116 43.4225 13.4193C43.575 13.827 43.8004 14.1501 44.0987 14.3888C44.4003 14.6241 44.7715 14.7417 45.2123 14.7417ZM54.6136 15.8604V5.67853H60.9275V7.00098H56.1498V10.1032H60.4751V11.4207H56.1498V15.8604H54.6136ZM62.6974 15.8604V8.22399H64.1839V15.8604H62.6974ZM63.4481 7.04572C63.1896 7.04572 62.9675 6.95955 62.7819 6.7872C62.5996 6.61153 62.5085 6.40273 62.5085 6.16078C62.5085 5.91551 62.5996 5.70671 62.7819 5.53436C62.9675 5.35869 63.1896 5.27086 63.4481 5.27086C63.7066 5.27086 63.927 5.35869 64.1093 5.53436C64.2949 5.70671 64.3877 5.91551 64.3877 6.16078C64.3877 6.40273 64.2949 6.61153 64.1093 6.7872C63.927 6.95955 63.7066 7.04572 63.4481 7.04572ZM67.6702 5.67853V15.8604H66.1837V5.67853H67.6702ZM73.2347 8.22399V9.41717H69.0635V8.22399H73.2347ZM70.1821 6.39444H71.6686V13.6182C71.6686 13.9065 71.7117 14.1236 71.7979 14.2694C71.8841 14.412 71.9951 14.5097 72.131 14.5628C72.2702 14.6125 72.421 14.6373 72.5834 14.6373C72.7027 14.6373 72.8071 14.6291 72.8966 14.6125C72.9861 14.5959 73.0557 14.5827 73.1054 14.5727L73.3739 15.8007C73.2877 15.8338 73.1651 15.867 73.006 15.9001C72.8469 15.9366 72.648 15.9565 72.4094 15.9598C72.0183 15.9664 71.6537 15.8968 71.3157 15.751C70.9776 15.6051 70.7041 15.3798 70.4953 15.0748C70.2865 14.7699 70.1821 14.3871 70.1821 13.9264V6.39444ZM78.0882 16.0145C77.3358 16.0145 76.6879 15.8537 76.1443 15.5322C75.6041 15.2074 75.1864 14.7517 74.8915 14.165C74.5998 13.5751 74.454 12.884 74.454 12.0919C74.454 11.3097 74.5998 10.6203 74.8915 10.0237C75.1864 9.42711 75.5974 8.96144 76.1244 8.62669C76.6547 8.29193 77.2745 8.12456 77.9838 8.12456C78.4147 8.12456 78.8323 8.19582 79.2366 8.33833C79.641 8.48085 80.0039 8.70457 80.3254 9.0095C80.6469 9.31442 80.9005 9.71049 81.0861 10.1977C81.2717 10.6816 81.3645 11.2699 81.3645 11.9626V12.4896H75.2942V11.376H79.9078C79.9078 10.9849 79.8283 10.6385 79.6692 10.3369C79.5101 10.032 79.2864 9.7917 78.998 9.61603C78.713 9.44037 78.3782 9.35254 77.9937 9.35254C77.5761 9.35254 77.2115 9.45529 76.9 9.66078C76.5918 9.86296 76.3531 10.1281 76.1841 10.4562C76.0184 10.781 75.9355 11.134 75.9355 11.5152V12.3852C75.9355 12.8956 76.025 13.3298 76.204 13.6878C76.3863 14.0457 76.6398 14.3192 76.9646 14.5081C77.2894 14.6937 77.6689 14.7865 78.1031 14.7865C78.3848 14.7865 78.6417 14.7467 78.8737 14.6672C79.1057 14.5843 79.3062 14.4617 79.4753 14.2993C79.6443 14.1369 79.7736 13.9363 79.8631 13.6977L81.27 13.9513C81.1573 14.3656 80.9552 14.7285 80.6635 15.04C80.3751 15.3483 80.0122 15.5886 79.5747 15.7609C79.1405 15.93 78.645 16.0145 78.0882 16.0145ZM83.0138 15.8604V8.22399H84.4506V9.43706H84.5301C84.6693 9.02607 84.9146 8.70292 85.2659 8.4676C85.6206 8.22896 86.0216 8.10964 86.4691 8.10964C86.5619 8.10964 86.6712 8.11296 86.7972 8.11958C86.9264 8.12621 87.0275 8.1345 87.1005 8.14444V9.56632C87.0408 9.54975 86.9347 9.53152 86.7823 9.51163C86.6298 9.48843 86.4773 9.47683 86.3249 9.47683C85.9736 9.47683 85.6603 9.5514 85.3853 9.70055C85.1135 9.84638 84.898 10.0502 84.7389 10.3121C84.5799 10.5706 84.5003 10.8656 84.5003 11.197V15.8604H83.0138Z"
-                fill="#0284C7"
-              />
-            </svg>
-            <svg
-              width="54"
-              height="11"
-              className="ml-auto"
-              viewBox="0 0 54 11"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M9.10905 3.61035H7.87609C7.80318 3.25571 7.67557 2.94416 7.49328 2.67569C7.3143 2.40723 7.09555 2.18185 6.83703 1.99956C6.58182 1.81395 6.29844 1.67475 5.98689 1.58194C5.67534 1.48914 5.35052 1.44274 5.01246 1.44274C4.39598 1.44274 3.8375 1.59851 3.33703 1.91007C2.83987 2.22162 2.4438 2.68066 2.14882 3.2872C1.85715 3.89373 1.71132 4.63781 1.71132 5.51944C1.71132 6.40107 1.85715 7.14515 2.14882 7.75169C2.4438 8.35822 2.83987 8.81726 3.33703 9.12882C3.8375 9.44037 4.39598 9.59615 5.01246 9.59615C5.35052 9.59615 5.67534 9.54975 5.98689 9.45694C6.29844 9.36414 6.58182 9.22659 6.83703 9.0443C7.09555 8.85869 7.3143 8.63166 7.49328 8.36319C7.67557 8.09141 7.80318 7.77986 7.87609 7.42853H9.10905C9.01624 7.94889 8.84721 8.41457 8.60195 8.82555C8.35668 9.23654 8.05176 9.5862 7.68717 9.87456C7.32259 10.1596 6.91326 10.3767 6.45919 10.5258C6.00843 10.675 5.52619 10.7496 5.01246 10.7496C4.14409 10.7496 3.37183 10.5374 2.6957 10.1132C2.01956 9.68895 1.4876 9.08573 1.09981 8.30353C0.71203 7.52134 0.518138 6.59331 0.518138 5.51944C0.518138 4.44558 0.71203 3.51755 1.09981 2.73535C1.4876 1.95315 2.01956 1.34993 2.6957 0.925692C3.37183 0.50145 4.14409 0.289328 5.01246 0.289328C5.52619 0.289328 6.00843 0.363902 6.45919 0.51305C6.91326 0.662198 7.32259 0.880948 7.68717 1.1693C8.05176 1.45434 8.35668 1.80235 8.60195 2.21333C8.84721 2.621 9.01624 3.08668 9.10905 3.61035ZM12.1156 0.428533V10.6104H10.9423V0.428533H12.1156ZM17.4663 10.7694C16.7305 10.7694 16.0958 10.607 15.5622 10.2822C15.0319 9.9541 14.6225 9.49672 14.3342 8.91007C14.0492 8.32011 13.9066 7.63403 13.9066 6.85183C13.9066 6.06963 14.0492 5.38024 14.3342 4.78365C14.6225 4.18374 15.0236 3.71641 15.5373 3.38166C16.0544 3.04359 16.6576 2.87456 17.347 2.87456C17.7447 2.87456 18.1375 2.94084 18.5252 3.07342C18.913 3.206 19.266 3.42143 19.5842 3.71973C19.9024 4.01471 20.1559 4.40581 20.3448 4.89302C20.5338 5.38024 20.6282 5.98014 20.6282 6.69274V7.1899H14.7419V6.17569H19.435C19.435 5.74482 19.3489 5.36035 19.1765 5.02228C19.0075 4.68421 18.7655 4.41741 18.4507 4.22186C18.1391 4.02631 17.7712 3.92853 17.347 3.92853C16.8796 3.92853 16.4753 4.04454 16.1339 4.27654C15.7958 4.50524 15.5357 4.80353 15.3534 5.17143C15.1711 5.53933 15.0799 5.93374 15.0799 6.35467V7.03081C15.0799 7.60751 15.1794 8.09638 15.3782 8.49743C15.5804 8.89515 15.8605 9.19842 16.2184 9.40723C16.5764 9.61272 16.9923 9.71547 17.4663 9.71547C17.7745 9.71547 18.0529 9.67238 18.3015 9.5862C18.5534 9.49672 18.7705 9.36414 18.9528 9.18848C19.1351 9.0095 19.276 8.78743 19.3754 8.52228L20.5089 8.84047C20.3896 9.22493 20.1891 9.563 19.9073 9.85467C19.6256 10.143 19.2776 10.3684 18.8633 10.5308C18.449 10.6899 17.9833 10.7694 17.4663 10.7694ZM24.6602 10.7893C24.1763 10.7893 23.7371 10.6982 23.3427 10.5159C22.9483 10.3303 22.6351 10.0635 22.4031 9.71547C22.1711 9.36414 22.0551 8.9399 22.0551 8.44274C22.0551 8.00524 22.1412 7.6506 22.3136 7.37882C22.4859 7.10372 22.7163 6.88829 23.0046 6.73251C23.293 6.57673 23.6112 6.46073 23.9592 6.3845C24.3105 6.30495 24.6635 6.24198 25.0181 6.19558C25.4822 6.13592 25.8583 6.09118 26.1467 6.06135C26.4384 6.0282 26.6505 5.97351 26.7831 5.89728C26.9189 5.82105 26.9869 5.68848 26.9869 5.49956V5.45978C26.9869 4.96925 26.8527 4.5881 26.5842 4.31632C26.319 4.04454 25.9163 3.90865 25.3761 3.90865C24.816 3.90865 24.3768 4.03128 24.0586 4.27654C23.7404 4.52181 23.5167 4.78365 23.3875 5.06206L22.2738 4.66433C22.4727 4.20031 22.7378 3.83904 23.0693 3.58052C23.404 3.31868 23.7686 3.13639 24.163 3.03365C24.5608 2.92759 24.9519 2.87456 25.3363 2.87456C25.5816 2.87456 25.8633 2.90439 26.1815 2.96404C26.503 3.02039 26.8129 3.13805 27.1112 3.31703C27.4128 3.496 27.663 3.76613 27.8619 4.1274C28.0608 4.48867 28.1602 4.97257 28.1602 5.5791V10.6104H26.9869V9.57626H26.9272C26.8477 9.74198 26.7151 9.9193 26.5295 10.1082C26.3439 10.2971 26.097 10.4579 25.7887 10.5905C25.4805 10.723 25.1043 10.7893 24.6602 10.7893ZM24.8392 9.73535C25.3032 9.73535 25.6943 9.64421 26.0125 9.46191C26.334 9.27962 26.5759 9.0443 26.7383 8.75595C26.904 8.4676 26.9869 8.16433 26.9869 7.84615V6.77228C26.9372 6.83194 26.8278 6.88663 26.6588 6.93635C26.493 6.98275 26.3008 7.02418 26.0821 7.06064C25.8666 7.09378 25.6562 7.12361 25.4507 7.15012C25.2485 7.17333 25.0844 7.19321 24.9585 7.20978C24.6536 7.24956 24.3685 7.31419 24.1034 7.40368C23.8415 7.48985 23.6294 7.62077 23.467 7.79643C23.3079 7.96878 23.2284 8.2041 23.2284 8.5024C23.2284 8.91007 23.3792 9.21831 23.6808 9.42711C23.9857 9.63261 24.3718 9.73535 24.8392 9.73535ZM30.3017 10.6104V2.97399H31.4352V4.1274H31.5148C31.654 3.74956 31.9059 3.44297 32.2704 3.20765C32.635 2.97233 33.046 2.85467 33.5034 2.85467C33.5896 2.85467 33.6973 2.85633 33.8266 2.85964C33.9558 2.86296 34.0536 2.86793 34.1199 2.87456V4.06774C34.0801 4.05779 33.989 4.04288 33.8464 4.02299C33.7072 3.99979 33.5597 3.98819 33.404 3.98819C33.0328 3.98819 32.7013 4.06608 32.4097 4.22186C32.1213 4.37432 31.8926 4.58644 31.7236 4.85822C31.5579 5.12669 31.475 5.43327 31.475 5.77797V10.6104H30.3017ZM40.0249 10.6104H38.7323L42.4709 0.428533H43.7436L47.4823 10.6104H46.1897L43.147 2.03933H43.0675L40.0249 10.6104ZM40.5022 6.63308H45.7124V7.72683H40.5022V6.63308ZM50.0824 0.428533V10.6104H48.9091V0.428533H50.0824ZM53.4047 0.428533V10.6104H52.2314V0.428533H53.4047Z"
-                fill="#6B7280"
-              />
-            </svg>
-          </div>
+          )}
         </div>
       </div>
-      <GroupTable />
+      
+      <GroupTable data={filteredData} />
+      
       <div className="">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <GroupChart className="w-full lg:w-[70%]" />
-          <Contributors title="" className="w-full lg:w-[40%]" />
+          <GroupChart className="w-full lg:w-[70%]" data={users} />
+          <Contributors title="" className="w-full lg:w-[40%]" data={users} />
         </div>
       </div>
-      <FlaggedContentQueue/>
     </div>
   );
 };

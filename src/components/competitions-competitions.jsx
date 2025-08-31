@@ -103,7 +103,7 @@ export default function CompetitionsTable({ data }) {
               </TableCell>
               <TableCell>{competition.startDate}</TableCell>
               <TableCell>{competition.endDate}</TableCell>
-              <TableCell>{competition.participants?.length||0}</TableCell>
+              <TableCell>{competition.participants}</TableCell>
             </TableRow>
           ))}
         </TableBody>

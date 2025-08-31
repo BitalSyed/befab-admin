@@ -1,7 +1,7 @@
 import { API_URL, getCookie } from "@/components/cookieUtils";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const NewNewsLetter = () => {
@@ -11,6 +11,8 @@ const NewNewsLetter = () => {
   const [picture, setPicture] = useState(null);
   const [status, setStatus] = useState("draft"); // default draft
   const [scheduleDate, setScheduleDate] = useState("");
+  const [Case, setCase] = useState(0);
+  const { id } = useParams();
 
   const publishNews = () => {
     if (status === "scheduled") {
@@ -38,9 +40,13 @@ const NewNewsLetter = () => {
       formData.append("picture", picture);
     }
 
+    if(id){
+      formData.append("id", id);
+    }
+
     fetch(`${API_URL}/admin/newsletters`, {
       method: "POST",
-      headers: { "Authorization": `Bearer ${getCookie("skillrextech_auth")}`},
+      headers: { Authorization: `Bearer ${getCookie("skillrextech_auth")}` },
       body: formData, // sending multipart/form-data
     })
       .then((response) => response.json())
@@ -57,6 +63,39 @@ const NewNewsLetter = () => {
         toast.error("An error occurred while adding the newsletter.");
       });
   };
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchNewsletter = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/newsletters/get/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setTitle(data.title || "");
+          setDescription(data.description || "");
+          setStatus(data.status || "");
+          setScheduleDate(data.schedule || "");
+          setCase(1)
+          // optionally handle picture if needed
+        }
+      } catch (error) {
+        console.error("Error fetching newsletter:", error);
+        toast.error("An error occurred while fetching the newsletter.");
+      }
+    };
+
+    fetchNewsletter();
+  }, [id]);
 
   return (
     <div className="w-[80%] p-5 flex flex-col gap-5">
@@ -117,7 +156,9 @@ const NewNewsLetter = () => {
         {/* Schedule Date (only if scheduled) */}
         {status === "scheduled" && (
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-liblack">Schedule Date & Time</h3>
+            <h3 className="text-lg font-semibold text-liblack">
+              Schedule Date & Time
+            </h3>
             <input
               type="datetime-local"
               value={scheduleDate}

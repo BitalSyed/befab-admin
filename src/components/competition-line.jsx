@@ -33,27 +33,7 @@ export function ChartAreaInteractive({className, title, percentage, up, chartCon
         <CardTitle className="text-2xl">{percentage} <span className="text-xs text-green-500">{up}</span></CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart
-            data={chartData}
-            margin={{ left: 5, right: 5, top: 5, bottom: 5 }}
-          >
-            {/* <CartesianGrid vertical={false} strokeDasharray="3 3" /> */}
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            {/* Bottom Layer: New Signups */}
-            <Area
-              dataKey="other"
-              type="monotone"
-              fill="var(--color-other)"
-              fillOpacity={0.1}
-              stroke="var(--color-other)"
-              stackId="a"
-            />
-          </AreaChart>
-        </ChartContainer>
+        <div className={`${chartConfig.other.color} text-5xl text-bold`}>{Math.round(chartData)}</div>
       </CardContent>
     </Card>
   );

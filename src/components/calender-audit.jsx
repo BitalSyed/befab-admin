@@ -32,7 +32,6 @@ export default function CalendarAuditLog({ data }) {
     const formattedDate = dateObj.toLocaleString("en-US", options);
 
     return {
-      src: item.author.avatarUrl,
       name,
       action: "Created",
       actionType: "success",

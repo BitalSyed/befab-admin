@@ -138,12 +138,11 @@ const Users = () => {
         ID: user._id,
         "First Name": user.firstName,
         "Last Name": user.lastName,
-        Username: user.userName,
+        UserId: user.userId,
+        Username: user.username,
         Email: user.email,
-        Roles: user.role.join(", "),
-        Points: user.points,
+        Roles: user.role,
         "Created At": user.createdAt,
-        "Show Email": user.privacySettings?.showEmail || false,
       }));
 
       if (csvRows.length === 0) return "";
@@ -182,13 +181,13 @@ const Users = () => {
               Manage all user accounts and permissions
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <button onClick={exportUserData} className="cursor-pointer bg-white px-4 py-2 rounded-md border border-gray-300 text-gray-700">
               Export CSV
             </button>
             <Button
               onClick={() => navigate("/new-user")}
-              className="bg-[#862633] text-white ml-auto py-2 px-4 flex items-center gap-2"
+              className="bg-[#862633] text-white ml-auto py-5 px-4 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" /> Add User
             </Button>

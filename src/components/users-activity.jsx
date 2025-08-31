@@ -50,7 +50,7 @@ export default function Dashboard({ data }) {
         name: `${log.user.firstName} ${log.user.lastName}`,
         avatar: log.user.profilePicture,
         action: log.description,
-        time: RelativeTime(log.timestamp),
+        time: (new Date(log.timestamp).toLocaleString()),
       }));
       setRecentUsers(mapped);
       setRoles({
@@ -76,7 +76,7 @@ export default function Dashboard({ data }) {
         <CardContent>
           <ScrollArea className="h-[260px]">
             <div className="space-y-4">
-              {recentUsers.map((user, i) => (
+              {recentUsers.slice().reverse().map((user, i) => (
                 <div key={i} className="flex items-start gap-4">
                   <Avatar>
                     <AvatarImage src={user.avatar} />

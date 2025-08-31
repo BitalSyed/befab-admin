@@ -93,43 +93,47 @@ const CalendarPanel = ({ data }) => {
     };
   }
   useEffect(() => {
-    setEvents(
-      data.map((e) => e.status != "completed" && mapToCalendarEvent(e))
-    );
-  }, [data]);
+  setEvents(
+    data
+      .filter((e) => e.status !== "completed") // keep only not completed
+      .map((e) => mapToCalendarEvent(e))       // map them properly
+  );
+}, [data]);
+
+  console.log(events);
   return (
     <div className="flex flex-wrap lg:flex-nowrap gap-4">
       {/* Upcoming Events */}
       <Card className="w-full rounded-md">
         <CardContent className="p-4 py-0">
           <h2 className="text-lg font-semibold mb-4">Upcoming Events</h2>
-          {events.map((event, i) => (
+          {events.length > 0 && events.every(v => v != false)?events.map((event, i) => (
             <div
               key={i}
               className="flex items-start gap-4 py-3 border-b last:border-none"
             >
               <div className="text-center w-12">
                 <div className="text-xl font-bold text-gray-800">
-                  {event.day}
+                  {event?.day}
                 </div>
                 <div className="text-xs text-gray-500 uppercase">
-                  {event.month}
+                  {event?.month}
                 </div>
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium text-gray-800">
-                  {event.title}
+                  {event?.title}
                 </div>
-                <div className="text-xs text-gray-500">{event.time}</div>
-                <div className="text-xs text-gray-400">{event.location}</div>
+                <div className="text-xs text-gray-500">{event?.time}</div>
+                <div className="text-xs text-gray-400">{event?.location}</div>
               </div>
               <div className="mt-1">
-                <Badge className={`text-xs ${event.badgeColor}`}>
-                  {event.badge}
+                <Badge className={`text-xs ${event?.badgeColor}`}>
+                  {event?.badge}
                 </Badge>
               </div>
             </div>
-          ))}
+          )):('No Upcoming Events')}
         </CardContent>
       </Card>
 

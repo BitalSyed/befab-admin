@@ -192,6 +192,7 @@ export function UserTable({ data, d }) {
             <TableRow>
               <TableHead className="w-[48px]"></TableHead>
               <TableHead className="text-gray-500">USER</TableHead>
+              <TableHead className="text-gray-500">RECORD ID</TableHead>
               <TableHead className="text-gray-500">USERNAME</TableHead>
               <TableHead className="text-gray-500">STATUS</TableHead>
               <TableHead className="text-gray-500">ROLE</TableHead>
@@ -212,6 +213,7 @@ export function UserTable({ data, d }) {
                   </div>
                   <div className="text-sm text-gray-500">{user.email}</div>
                 </TableCell>
+                <TableCell>{user.userId||'N/A'}</TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>
                   <Badge variant="enabled">
@@ -224,7 +226,7 @@ export function UserTable({ data, d }) {
                 </TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
-                  <RelativeTime dateString={user.createdAt} />
+                  {new Date(user.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <Badge variant="enabled">Enabled</Badge>

@@ -118,6 +118,7 @@ function App() {
                 <Route path="/new-user" element={<NewUser />} />
                 <Route path="/news-letters" element={<NewsLetters />} />
                 <Route path="/new-news" element={<NewNewsLetter />} />
+                <Route path="/new-news/:id" element={<NewNewsLetter />} />
                 <Route path="/new-competition" element={<NewCompetition />} />
                 <Route path="/new-event" element={<NewEvent />} />
                 <Route path="/new-group" element={<NewGroup />} />

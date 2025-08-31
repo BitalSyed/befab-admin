@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { API_URL, getCookie } from "@/components/cookieUtils";
 
-const categories = ["BeFAB HBCU", "Mentor Meetup", "Students"];
+const categories = ["BeFAB NCCU", "Mentor Meetup", "Students"];
 
 const NewVideo = () => {
   const navigate = useNavigate();

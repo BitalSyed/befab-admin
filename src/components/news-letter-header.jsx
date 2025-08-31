@@ -61,7 +61,7 @@ export function NewsletterHeader({ data, setData }) {
       Description: n.description?.replace(/\r?\n|\r/g, " "),
       Author: `${n.author?.firstName || ""} ${n.author?.lastName || ""}`.trim(),
       Username: n.author?.username || "",
-      Email: n.author?.email || "",
+      userId: n.author?.userId || "",
       Role: Array.isArray(n.author?.role)
         ? n.author.role.join(", ")
         : n.author?.role || "",

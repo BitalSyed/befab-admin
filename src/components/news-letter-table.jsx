@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { API_URL, getCookie } from "./cookieUtils";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function NewsletterTable({ data = [] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
+  const navigate = useNavigate();
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
 
@@ -139,7 +141,7 @@ export default function NewsletterTable({ data = [] }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
+                    <DropdownMenuItem onClick={()=>navigate('/new-news/'+item._id)}>Edit</DropdownMenuItem>
                     <DropdownMenuItem onClick={()=>deleteLetter(item._id)}>Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
