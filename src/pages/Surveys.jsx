@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Select,
   SelectContent,
@@ -11,9 +11,41 @@ import { Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import SurveyTables from '@/components/survey-table';
 import { useNavigate } from 'react-router-dom';
+import { API_URL, getCookie } from '@/components/cookieUtils';
+import { toast } from 'react-toastify';
 
 const Surveys = () => {
   const navigate=useNavigate()
+   const [users, setUsers] = useState([]);
+    const [data, setData] = useState([]);
+    useEffect(() => {
+      const fetchCompetitions = async () => {
+        try {
+          const response = await fetch(`${API_URL}/admin/surveys`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          });
+  
+          const data = await response.json();
+  
+          if (data.error) {
+            toast.error(data.error);
+          } else {
+            setUsers(data); // assuming setUsers exists
+            setData(data); // assuming setData exists
+            console.log(data);
+          }
+        } catch (error) {
+          console.error("Error fetching competitions:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+  
+      fetchCompetitions();
+    }, []);
   return (
     <div className="flex flex-col gap-4 py-4 px-4 lg:px-6 md:gap-6 md:py-6">
       <div className="flex flex-col space-y-4">
@@ -89,7 +121,7 @@ const Surveys = () => {
               </div>
             </div>
 
-            <SurveyTables/>
+            <SurveyTables data={data}/>
     </div>
   )
 }

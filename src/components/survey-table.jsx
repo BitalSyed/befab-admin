@@ -100,7 +100,7 @@ const activityTable = [
   },
 ];
 
-export default function SurveyTables() {
+export default function SurveyTables({data}) {
   return (
     <div className="space-y-6">
       <Card className="p-0 rounded-md overflow-hidden border border-gray-200">
@@ -118,14 +118,14 @@ export default function SurveyTables() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {surveyTable.map((row, i) => (
+            {data&&data.map((row, i) => (
               <TableRow key={i} className="hover:bg-gray-50">
                 <TableCell className="px-4"><Checkbox /></TableCell>
                 <TableCell>
                   <div className="font-medium text-gray-900 leading-tight">{row.title}</div>
-                  <div className="text-gray-500 text-sm">{row.questions}</div>
+                  <div className="text-gray-500 text-sm">{row.questions.length+" questions"}</div>
                 </TableCell>
-                <TableCell className="text-gray-500 text-sm">{row.created}</TableCell>
+                <TableCell className="text-gray-500 text-sm">{new Date(row.createdAt).toLocaleString('en-US')}</TableCell>
                 <TableCell>
                   <span className={`text-xs px-2 py-1 rounded-full bg-${row.statusColor}-100 text-${row.statusColor}-800 font-medium`}>
                     {row.status}
