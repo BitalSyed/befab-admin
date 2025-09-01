@@ -27,6 +27,10 @@ import NewEvent from "./pages/NewEvent";
 import NewVideo from "./pages/NewVideo";
 import NewGroup from "./pages/NewGroup";
 import NewSurvey from "./pages/NewSurvey";
+import SurveyResponsesPage from "./pages/SurveyResponsesPage";
+import TakeSurveyPage from "./pages/TakeSurveyPage.jsx";
+import Messaging from "./pages/Messaging";
+import CreateGoalPage from "./pages/CreateGoalPage";
 
 function App() {
   const navigate = useNavigate();
@@ -129,9 +133,13 @@ function App() {
                 <Route path="/new-video" element={<NewVideo />} />
                 <Route path="/groups" element={<Groups />} />
                 <Route path="/goals" element={<Goals />} />
-                <Route path="/surveys" element={<Surveys />} />
+                <Route path="/create-goal" element={<CreateGoalPage />} />
+                <Route path="/surveys" element={<Surveys d={data} />} />
+                <Route path="/surveys/:id" element={<SurveyResponsesPage d={data} />} />
+                <Route path="/surveys/take/:id" element={<TakeSurveyPage d={data} />} />
                 <Route path="/nutrition" element={<Nutrition />} />
                 <Route path="/fitness" element={<Fitness />} />
+                <Route path="/messaging-management" element={<Messaging userId={data._id} />} />
               </Routes>
             </div>
           </div>

@@ -197,7 +197,7 @@ const NewSurvey = () => {
                     <div key={oIndex} className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder={`Option ${oIndex + 1}`}
+                        placeholder={`Option ${oIndex + 1} (other for "Other")`}
                         value={opt}
                         onChange={(e) =>
                           handleOptionChange(qIndex, oIndex, e.target.value)

@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { API_URL } from "./cookieUtils";
 
 const auditLog = [
   {
@@ -60,7 +61,7 @@ const badgeStyles = {
   edited: "bg-yellow-100 text-yellow-800",
 };
 
-export default function GoalAuditLog() {
+export default function GoalAuditLog({data}) {
   return (
     <Card className="p-0 rounded-xl overflow-hidden border border-gray-200">
       <div className="px-6 pt-5 pb-3 border-b">
@@ -74,40 +75,37 @@ export default function GoalAuditLog() {
           <TableRow>
             <TableHead className="px-6 py-3 text-muted-foreground text-xs font-medium uppercase">Timestamp</TableHead>
             <TableHead className="px-6 py-3 text-muted-foreground text-xs font-medium uppercase">User</TableHead>
-            <TableHead className="px-6 py-3 text-muted-foreground text-xs font-medium uppercase">Action</TableHead>
+            <TableHead className="px-6 py-3 text-muted-foreground text-xs font-medium uppercase">Authorization</TableHead>
             <TableHead className="px-6 py-3 text-muted-foreground text-xs font-medium uppercase">Details</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {auditLog.map((entry, index) => (
+          {data&&data.map((entry, index) => (
             <TableRow key={index} className="border-b hover:bg-gray-50">
-              <TableCell className="px-6 py-4 text-gray-500 whitespace-nowrap">{entry.timestamp}</TableCell>
+              <TableCell className="px-6 py-4 text-gray-500 whitespace-nowrap">{new Date(entry.createdAt).toLocaleString('en-US')}</TableCell>
               <TableCell className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={entry.user.avatar} />
-                    <AvatarFallback>{entry.user.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={entry.user.avatarUrl||API_URL+"/Befab.png"} />
+                    <AvatarFallback>{entry.user.firstName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-gray-900">{entry.user.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{entry.user.username}</span>
                 </div>
               </TableCell>
               <TableCell className="px-6 py-4 whitespace-nowrap">
                 <span
-                  className={`text-xs font-medium px-2 py-1 rounded-full ${badgeStyles[entry.actionType]}`}
+                  className={`text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800}`}
                 >
-                  {entry.action}
+                  {entry.creator}
                 </span>
               </TableCell>
               <TableCell className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                {entry.details}
+                {entry.name}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <div className="text-center text-sm text-blue-600 py-3 font-medium hover:underline cursor-pointer">
-        View Full Audit Log
-      </div>
     </Card>
   );
 }

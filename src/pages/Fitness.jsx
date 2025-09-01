@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import FitnessCards from "@/components/fitness-cards";
 import {
   Select,
@@ -10,8 +10,42 @@ import {
 import FitnessDashboard from '@/components/fitness-graphs';
 import ActivityFeedDashboard from '@/components/fitness-recent';
 import { Bell, Check, Download, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { API_URL, getCookie } from '@/components/cookieUtils';
 
 const Fitness = () => {
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/fitness`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setUsers(data); // assuming setUsers exists
+          setData(data); // assuming setData exists
+          console.log(data);
+        }
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
   return (
     <div className="flex flex-col gap-4 py-4 px-4 lg:px-6 md:gap-6 md:py-6">
       <div className="flex flex-col space-y-4">
