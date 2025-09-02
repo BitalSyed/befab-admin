@@ -16,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useEffect, useState } from "react";
 
 export const description = "A line chart with dots";
 
@@ -40,7 +41,17 @@ const chartConfig = {
   },
 };
 
-export function ChartLineDots({ className }) {
+export function ChartLineDots({ className, data }) {
+  const [chartData, setChartData]=useState([])
+
+  useEffect(()=>{
+    setChartData(data.trends?.calories?.map(e=>{
+      return {
+        month: new Date(e._id).toLocaleDateString('en-US', { weekday: 'short' }), desktop: e.avgCalories, mobile: 2000
+      }
+    }))
+  }, [data])
+
   return (
     <Card className={className}>
       <CardHeader>

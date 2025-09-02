@@ -9,7 +9,7 @@ import {
 } from "./ui/card";
 import { RiArrowDownLine, RiArrowUpLine } from "react-icons/ri";
 
-const NutritionCards = () => {
+const NutritionCards = ({data}) => {
   return (
     <div className=" grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-5">
       <Card className="@container/card rounded-md justify-between">
@@ -41,12 +41,9 @@ const NutritionCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            58,842{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 8.3%
-            </p>
+            {data&&data?.summary?.meals}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">vs previous period</div>
+          <div className="text-muted-foreground">total</div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -78,10 +75,7 @@ const NutritionCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            15,723{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 5.2%
-            </p>
+            {data&&data?.summary?.active}{" "}
           </CardTitle>
           <div className="text-muted-foreground">tracking nutrition</div>
         </CardFooter>
@@ -115,10 +109,7 @@ const NutritionCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            2,145{" "}
-            <p className="text-xs text-red-400 flex items-center">
-              <RiArrowDownLine /> 2.1%
-            </p>
+            {data&&data?.summary?.cal.toFixed(2)}{" "}
           </CardTitle>
           <div className="text-muted-foreground">per user daily</div>
         </CardFooter>
@@ -152,10 +143,7 @@ const NutritionCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            78.5%{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 3.8%
-            </p>
+            {data&&data?.summary?.hydration.toFixed(2)}ml{" "}
           </CardTitle>
           <div className="text-muted-foreground">goal compliance</div>
         </CardFooter>
@@ -189,10 +177,7 @@ const NutritionCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            64.2%{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 1.5%
-            </p>
+            {data&&data?.summary?.macro.toFixed(2)}%{" "}
           </CardTitle>
           <div className="text-muted-foreground">of users on target</div>
         </CardFooter>

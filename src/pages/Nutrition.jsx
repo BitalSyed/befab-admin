@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -15,11 +15,44 @@ import { ChartBarStacked } from "@/components/nutrition-macronutrient";
 import DashboardCharts from "@/components/nutrition-hydration";
 import ActivityFeed from "@/components/nutrition-activity";
 import NutritionInsights from "@/components/nutrition-insights";
+import { useNavigate } from "react-router-dom";
+import { API_URL, getCookie } from "@/components/cookieUtils";
 
 const Nutrition = () => {
+  const navigate = useNavigate();
+    const [users, setUsers] = useState([]);
+    const [data, setData] = useState([]);
+    useEffect(() => {
+      const fetchCompetitions = async () => {
+        try {
+          const response = await fetch(`${API_URL}/admin/nutrition`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          });
+  
+          const data = await response.json();
+  
+          if (data.error) {
+            toast.error(data.error);
+          } else {
+            setUsers(data); // assuming setUsers exists
+            setData(data); // assuming setData exists
+            console.log(data);
+          }
+        } catch (error) {
+          console.error("Error fetching competitions:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+  
+      fetchCompetitions();
+    }, []);
   return (
     <div className="flex flex-col gap-4 py-4 px-4 lg:px-6 md:gap-6 md:py-6">
-      <div>
+      {/* <div>
         <ul className="w-full flex overflow-x-scroll lg:overflow-x-auto text-nowrap lg:text-wrap relative before:absolute before:w-full before:bottom-0 before:border-b-2 before:border-gray-200">
           <li className="tab relative text-blue-700 font-semibold hover:text-blue-700 text-[15px] text-center py-3 px-6 border-b-2 border-blue-700 cursor-pointer transition-all">
             Dashboard & Analytics
@@ -37,7 +70,7 @@ const Nutrition = () => {
             Content & Tips
           </li>
         </ul>
-      </div>
+      </div> */}
       <div className="flex flex-col space-y-4">
         <div className="flex flex-wrap gap-2 justify-between">
           <div className="flex items-center gap-2">
@@ -48,7 +81,7 @@ const Nutrition = () => {
           </div>
           <div className="flex gap-3">
             {/* Your SVG code remains the same */}
-            <Select>
+            {/* <Select>
               <SelectTrigger className="w-[150px] bg-white text-sm">
                 <SelectValue placeholder="Last 7 days" />
               </SelectTrigger>
@@ -58,20 +91,20 @@ const Nutrition = () => {
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </div>
       </div>
-      <NutritionCards />
+      <NutritionCards data={data} />
       <div>
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <ChartLineDots className="w-full lg:w-[50%]" />
-          <ChartBarStacked title="" className="w-full lg:w-[50%] flex flex-col justify-between" />
+          <ChartLineDots data={data} className="w-full lg:w-[50%]" />
+          <ChartBarStacked data={data} title="" className="w-full lg:w-[50%] flex flex-col justify-between" />
         </div>
       </div>
-      <DashboardCharts/>
-      <ActivityFeed/>
-      <NutritionInsights/>
+      <DashboardCharts data={data}/>
+      <ActivityFeed data={data}/>
+      <NutritionInsights data={data}/>
     </div>
   );
 };

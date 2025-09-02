@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -37,7 +38,22 @@ const mealData = [
   { day: "Sun", breakfast: 7600, lunch: 8600, dinner: 9200, snacks: 3850 }
 ];
 
-export default function DashboardCharts() {
+export default function DashboardCharts({data}) {
+  const [hydrationData, setChartData]=useState([])
+  const [mealData, setChartData1]=useState([])
+
+  useEffect(()=>{
+    setChartData(data.trends?.water?.map(e=>{
+      return {
+        day: new Date(e._id).toLocaleDateString('en-US', { weekday: 'short' }), water: (e.avgWater_oz/29.5735).toFixed(2), goal: (2000/29.5735).toFixed(2)
+      }
+    }))
+    setChartData1(data.trends?.mealCounts?.map(e=>{
+      return {
+        day: new Date(e._id).toLocaleDateString('en-US', { weekday: 'short' }), breakfast: e.breakfast, lunch: e.lunch, dinner: e.dinner, snacks: e.snacks
+      }
+    }))
+  }, [data])
   return (
     <div className="flex flex-col md:flex-row gap-4">
       {/* Hydration Tracking */}
@@ -94,7 +110,7 @@ export default function DashboardCharts() {
             <BarChart data={mealData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" />
-              <YAxis domain={[0, 40000]} tickFormatter={(v) => `${v / 1000}k`} />
+              <YAxis />
               <Tooltip />
               <Bar dataKey="breakfast" barSize={40} stackId="a" fill="#F59E0B" name="Breakfast" />
               <Bar dataKey="lunch" barSize={40} stackId="a" fill="#3b82f6" name="Lunch" />

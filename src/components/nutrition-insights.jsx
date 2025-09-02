@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Bot } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const mealData = [
   { name: "Breakfast", value: 400 },
@@ -12,7 +13,22 @@ const mealData = [
 
 const COLORS = ["#3b82f6", "#facc15", "#8b5cf6", "#10b981"];
 
-export default function NutritionInsights() {
+export default function NutritionInsights({data}) {
+  const [mealData, setChartData]=useState([])
+
+  useEffect(() => {
+  if (!data?.totals?.length) return;
+
+  const { breakfast = 0, lunch = 0, dinner = 0, snacks = 0 } = data.totals[0];
+
+  setChartData([
+    { name: "Breakfast", value: breakfast },
+    { name: "Lunch", value: lunch },
+    { name: "Dinner", value: dinner },
+    { name: "Snacks", value: snacks },
+  ]);
+}, [data]);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -52,33 +68,19 @@ export default function NutritionInsights() {
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Most Logged Foods */}
           <div className="bg-muted p-4 rounded-lg space-y-2">
             <div className="text-sm text-black font-medium">
               Most-Logged Foods
             </div>
             <div className="space-y-5 text-sm text-muted-foreground mt-5">
-              <div className="flex justify-between">
-                <span>Chicken Breast</span>
-                <span className="text-blue-600 font-medium">23.4%</span>
+            {data&&data?.leaderboard?.foods.slice(0, 5).map((e, i)=>(
+              <div key={i} className="flex justify-between">
+                <span>{e._id}</span>
+                <span className="text-blue-600 font-medium">{e.percentage}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Greek Yogurt</span>
-                <span className="text-blue-600 font-medium">18.7%</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Banana</span>
-                <span className="text-blue-600 font-medium">15.2%</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Eggs</span>
-                <span className="text-blue-600 font-medium">14.5%</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Protein Shake</span>
-                <span className="text-blue-600 font-medium">12.8%</span>
-              </div>
+            ))}
             </div>
           </div>
 
@@ -113,7 +115,7 @@ export default function NutritionInsights() {
           </div>
 
           {/* Global Portion Size Trends */}
-          <div className="bg-muted p-4 rounded-lg">
+          {/* <div className="bg-muted p-4 rounded-lg">
             <div className="text-sm text-muted-foreground font-medium mb-2">
               Global Portion Size Trends
             </div>
@@ -147,7 +149,7 @@ export default function NutritionInsights() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </CardContent>
     </Card>

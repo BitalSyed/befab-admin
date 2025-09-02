@@ -85,7 +85,7 @@ export default function VideoTable({ data }) {
         role:
           dbVideo.uploader.role[0].toUpperCase() +
           dbVideo.uploader.role.slice(1),
-        avatar: dbVideo.uploader.avatar || "/BeFab.png",
+        avatar: dbVideo.uploader.avatarUrl || "/BeFab.png",
       },
       date: new Date(dbVideo.createdAt).toLocaleDateString("en-US", {
         month: "long",

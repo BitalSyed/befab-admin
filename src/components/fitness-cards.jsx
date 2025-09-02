@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardAction,
@@ -9,7 +9,71 @@ import {
 } from "./ui/card";
 import { RiArrowDownLine, RiArrowUpLine } from "react-icons/ri";
 
-const FitnessCards = () => {
+const FitnessCards = ({ data }) => {
+  const [total, setTotal] = useState({
+    workouts: 0,
+    users: 0,
+    steps: 0,
+    calories: 0,
+    compliance: 0,
+  });
+  let s = 0,
+    d = 0;
+useEffect(() => {
+  if (!data || !data.data || !data.users) return;
+
+  let totalWorkouts = 0;
+  let totalSteps = 0;
+  let totalCalories = 0;
+  let activeUsers = 0;
+  let complianceSteps = 0;
+  let complianceDistance = 0;
+
+  // Count active users
+  data.users.forEach((user) => {
+    if (user.isActive) activeUsers++;
+  });
+
+  const userCount = data.users.length;
+
+  // Workouts
+  Object.values(data.data["HealthDataType.WORKOUTS"] || {}).forEach((v) => {
+    totalWorkouts += v; // assuming value is a number
+  });
+
+  // Steps
+  Object.values(data.data["HealthDataType.STEPS"] || {}).forEach((v) => {
+    totalSteps += v;
+    if (v >= 8000) complianceSteps++;
+  });
+
+  // Calories
+  Object.values(data.data["HealthDataType.TOTAL_CALORIES_BURNED"] || {}).forEach((v) => {
+    totalCalories += v;
+  });
+
+  // Distance compliance
+  Object.values(data.data["HealthDataType.DISTANCE_DELTA"] || {}).forEach((v) => {
+    if (v >= 6000) complianceDistance++;
+  });
+
+  // Average steps per user (if needed)
+  const avgSteps = Math.round(totalSteps / userCount);
+
+  // Compliance % (steps + distance) relative to users
+  const compliance = Math.round(((complianceSteps + complianceDistance) / (2 * userCount)) * 100);
+
+  // Set totals once
+  setTotal({
+    workouts: totalWorkouts,
+    steps: avgSteps,
+    calories: totalCalories.toFixed(2),
+    users: activeUsers,
+    compliance: compliance,
+  });
+
+}, [data]);
+
   return (
     <div className=" grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-5">
       <Card className="@container/card rounded-md justify-between">
@@ -41,12 +105,9 @@ const FitnessCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            58,842{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 8.3%
-            </p>
+            {total.workouts}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">vs previous period</div>
+          <div className="text-muted-foreground">last 7 days</div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -78,12 +139,11 @@ const FitnessCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            15,723{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 5.2%
-            </p>
+            {total.users}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">75.2% of total users</div>
+          <div className="text-muted-foreground">
+            {data && ((total.users / data?.users?.length) * 100)}% of total users
+          </div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -115,12 +175,9 @@ const FitnessCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            2,145{" "}
-            <p className="text-xs text-red-400 flex items-center">
-              <RiArrowDownLine /> 2.1%
-            </p>
+            {total.steps}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">daily average</div>
+          <div className="text-muted-foreground">weekly average</div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -152,10 +209,7 @@ const FitnessCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            2.8M{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 3.8%
-            </p>
+            {total.calories}{" "}
           </CardTitle>
           <div className="text-muted-foreground">total this week</div>
         </CardFooter>
@@ -191,10 +245,7 @@ const FitnessCards = () => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            64.2%{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 1.5%
-            </p>
+            {total.compliance}%{" "}
           </CardTitle>
           <div className="text-muted-foreground">goal achievement rate</div>
         </CardFooter>

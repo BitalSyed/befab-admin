@@ -18,6 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useEffect, useState } from "react";
 
 export const description = "A stacked bar chart with a legend";
 
@@ -46,7 +47,17 @@ const chartConfig = {
   },
 };
 
-export function ChartBarStacked({className}) {
+export function ChartBarStacked({className, data}) {
+  const [chartData, setChartData]=useState([])
+  
+    useEffect(()=>{
+      if(!data) return
+      setChartData(data.trends?.macros?.map(e=>{
+        return {
+          month: new Date(e._id).toLocaleDateString('en-US', { weekday: 'short' }), desktop: e.avgProtein, mobile: e.avgCarbs, hiit: e.avgFats
+        }
+      }))
+    }, [data])
   return (
     <Card className={className}>
       <CardHeader>

@@ -1,7 +1,7 @@
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import data from "../app/dashboard/data.json";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +22,96 @@ import { FeatureUsage } from "@/components/feature-usage";
 import { NotificationPerformance } from "@/components/notification-performance";
 import SupportTicket from "@/components/support-ticket";
 import SurveyResults from "@/components/survey-results";
+import { useNavigate } from "react-router-dom";
+import { API_URL, getCookie } from "@/components/cookieUtils";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+    const [users, setUsers] = useState([]);
+    const [data, setData] = useState([]);
+    const [data1, setData1] = useState([]);
+    useEffect(() => {
+      const fetchCompetitions = async () => {
+        try {
+          const response = await fetch(`${API_URL}/admin/nutrition`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          });
+  
+          const data = await response.json();
+  
+          if (data.error) {
+            toast.error(data.error);
+          } else {
+            setUsers(data); // assuming setUsers exists
+            console.log(data);
+          }
+        } catch (error) {
+          console.error("Error fetching competitions:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+  
+      fetchCompetitions();
+    }, []);
+    useEffect(() => {
+      const fetchCompetitions = async () => {
+        try {
+          const response = await fetch(`${API_URL}/admin/fitness`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          });
+  
+          const data = await response.json();
+  
+          if (data.error) {
+            toast.error(data.error);
+          } else {
+            setData(data); // assuming setData exists
+            console.log(data);
+          }
+        } catch (error) {
+          console.error("Error fetching competitions:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+  
+      fetchCompetitions();
+    }, []);
+    useEffect(() => {
+      const fetchCompetitions = async () => {
+        try {
+          const response = await fetch(`${API_URL}/admin/dashboard`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          });
+  
+          const data = await response.json();
+  
+          if (data.error) {
+            toast.error(data.error);
+          } else {
+            setData1(data); // assuming setData exists
+            console.log(data);
+          }
+        } catch (error) {
+          console.error("Error fetching competitions:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+  
+      fetchCompetitions();
+    }, []);
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
       <div className="flex flex-wrap justify-between px-8 gap-5">
@@ -50,7 +138,7 @@ const Dashboard = () => {
             </svg>
             Export
           </Button>
-          <Select>
+          {/* <Select>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Last 7 Days" />
             </SelectTrigger>
@@ -62,20 +150,20 @@ const Dashboard = () => {
                 <SelectItem value="year">Last Year</SelectItem>
               </SelectGroup>
             </SelectContent>
-          </Select>
+          </Select> */}
         </div>
       </div>
-      <SectionCards />
-      <div className="px-4 lg:px-6">
+      <SectionCards data={data1} />
+      {/* <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between items-start">
           <ChartAreaInteractive className="w-full lg:w-[70%]" />
           <ChartPieLabel title="" className="w-full lg:w-[40%]" />
         </div>
-      </div>
+      </div> */}
       <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <ChartBarStacked title="" className="w-full lg:w-[50%]" />
-          <NutritionTracking className="w-full lg:w-[50%]" />
+          {/* <ChartBarStacked title="" className="w-full lg:w-[50%]" /> */}
+          <NutritionTracking className="w-full lg:w-[100%]" />
         </div>
       </div>
       <div className="px-4 lg:px-6">
@@ -84,16 +172,16 @@ const Dashboard = () => {
           <ActiveChallenges className="w-full lg:w-[65%]" />
         </div>
       </div>
-      <div className="px-4 lg:px-6">
+      {/* <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between items-start">
           <FeatureUsage title="" className="w-full lg:w-[35%]" />
           <NotificationPerformance className="w-full lg:w-[65%]" />
         </div>
-      </div>
+      </div> */}
       <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <SupportTicket title="" className="w-full lg:w-[50%]" />
-          <SurveyResults className="w-full lg:w-[50%]" />
+          {/* <SupportTicket title="" className="w-full lg:w-[50%]" /> */}
+          <SurveyResults className="w-full lg:w-[100%]" />
         </div>
       </div>
 

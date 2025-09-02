@@ -86,7 +86,7 @@ export default function GoalAuditLog({data}) {
               <TableCell className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={entry.user.avatarUrl||API_URL+"/Befab.png"} />
+                   <AvatarImage src={API_URL + (entry.user.avatarUrl ?? "/BeFab.png")} />
                     <AvatarFallback>{entry.user.firstName?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium text-gray-900">{entry.user.username}</span>

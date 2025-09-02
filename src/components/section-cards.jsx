@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card";
 import { RiArrowDownLine, RiArrowUpLine } from "react-icons/ri";
 
-export function SectionCards() {
+export function SectionCards({data}) {
   return (
-    <div className=" grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+    <div className=" grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
       <Card className="@container/card rounded-md justify-between">
         <CardHeader>
           <CardDescription className="mt-3">Total Users</CardDescription>
@@ -43,12 +43,9 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            24,521{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 12.5%
-            </p>
+            {data&&data.users?.total}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">vs previous period</div>
+          <div className="text-muted-foreground">total</div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -80,12 +77,11 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            18,432{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 8.3%
-            </p>
+            {data&&data.users?.active}{" "}
           </CardTitle>
-          <div className="text-muted-foreground">75.2% of total users</div>
+          <div className="text-muted-foreground">{data && data.users?.total > 0
+    ? ((data.users.active / data.users.total) * 100).toFixed(2) + "%"
+    : "0% of total users"} of total users</div>
         </CardFooter>
       </Card>
       <Card className="@container/card rounded-md justify-between">
@@ -117,51 +113,9 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            84.7%{" "}
-            <p className="text-xs text-green-400 flex items-center">
-              <RiArrowUpLine /> 2.1%
-            </p>
+            {data&&data.users?.retentionRate}%{" "}
           </CardTitle>
           <div className="text-muted-foreground">30-day retention</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card rounded-md justify-between">
-        <CardHeader>
-          <CardDescription className="mt-3">
-            Avg Session Duration
-          </CardDescription>
-
-          <CardAction>
-            <svg
-              width="31"
-              height="41"
-              viewBox="0 0 31 41"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect
-                x="0.0700684"
-                y="0.660156"
-                width="29.96"
-                height="39.96"
-                rx="8"
-                fill="#FFEDD5"
-              />
-              <path
-                d="M13.5524 12.147C13.0001 12.147 12.5539 12.5932 12.5539 13.1455C12.5539 13.6979 13.0001 14.1441 13.5524 14.1441H14.0517V15.2176C10.9405 15.6981 8.55957 18.388 8.55957 21.6334C8.55957 25.2189 11.4648 28.1241 15.0503 28.1241C18.6358 28.1241 21.541 25.2189 21.541 21.6334C21.541 20.329 21.1572 19.1151 20.4956 18.101L21.2477 17.3489C21.6377 16.9588 21.6377 16.3254 21.2477 15.9353C20.8576 15.5452 20.2241 15.5452 19.8341 15.9353L19.16 16.6093C18.2832 15.8916 17.2191 15.3986 16.0489 15.2176V14.1441H16.5481C17.1005 14.1441 17.5467 13.6979 17.5467 13.1455C17.5467 12.5932 17.1005 12.147 16.5481 12.147H15.0503H13.5524ZM15.7992 18.1384V22.1327C15.7992 22.5477 15.4653 22.8816 15.0503 22.8816C14.6353 22.8816 14.3014 22.5477 14.3014 22.1327V18.1384C14.3014 17.7234 14.6353 17.3895 15.0503 17.3895C15.4653 17.3895 15.7992 17.7234 15.7992 18.1384Z"
-                fill="#EA580C"
-              />
-            </svg>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-end">
-            24:18{" "}
-            <p className="text-xs text-red-400 flex items-center">
-              <RiArrowDownLine /> 1.3%
-            </p>
-          </CardTitle>
-          <div className="text-muted-foreground">minutes per session</div>
         </CardFooter>
       </Card>
     </div>

@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { FaArrowDown, FaCaretDown, FaChevronDown } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { deleteCookie } from "./cookieUtils";
+import { API_URL, deleteCookie } from "./cookieUtils";
 
 export function SiteHeader({ title, data }) {
   return (
@@ -54,7 +54,7 @@ export function SiteHeader({ title, data }) {
               <div className="dropdown-menu relative flex shrink-0 group">
                 <div className="flex items-center text-sm">
                   <img
-                    src={data.profilePicture||'/BeFab.png'}
+                    src={API_URL+(data.profilePicture||'/BeFab.png')}
                     alt="profile-pic"
                     className="w-9 h-9 rounded-full cursor-pointer mr-2"
                   />{" "}

@@ -272,7 +272,7 @@ export default function GoalTrackerTable({ data, setData, users }) {
                 <td className="p-3">
                   <div className="flex items-center gap-2">
                       <img
-                        src={row.user.avatarUrl||API_URL+"/Befab.png"}
+                        src={API_URL+(row.user.avatarUrl||"/Befab.png")}
                         alt="avatar"
                         className="w-6 h-6 rounded-full border"
                       />
