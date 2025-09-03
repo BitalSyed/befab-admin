@@ -28,90 +28,150 @@ import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-    const [users, setUsers] = useState([]);
-    const [data, setData] = useState([]);
-    const [data1, setData1] = useState([]);
-    useEffect(() => {
-      const fetchCompetitions = async () => {
-        try {
-          const response = await fetch(`${API_URL}/admin/nutrition`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
-            },
-          });
-  
-          const data = await response.json();
-  
-          if (data.error) {
-            toast.error(data.error);
-          } else {
-            setUsers(data); // assuming setUsers exists
-            console.log(data);
-          }
-        } catch (error) {
-          console.error("Error fetching competitions:", error);
-          toast.error("An error occurred. Please try again.");
+  const [users, setUsers] = useState([]);
+  const [data, setData] = useState([]);
+  const [data1, setData1] = useState([]);
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/nutrition`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setUsers(data); // assuming setUsers exists
+          console.log(data);
         }
-      };
-  
-      fetchCompetitions();
-    }, []);
-    useEffect(() => {
-      const fetchCompetitions = async () => {
-        try {
-          const response = await fetch(`${API_URL}/admin/fitness`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
-            },
-          });
-  
-          const data = await response.json();
-  
-          if (data.error) {
-            toast.error(data.error);
-          } else {
-            setData(data); // assuming setData exists
-            console.log(data);
-          }
-        } catch (error) {
-          console.error("Error fetching competitions:", error);
-          toast.error("An error occurred. Please try again.");
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/fitness`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setData(data); // assuming setData exists
+          console.log(data);
         }
-      };
-  
-      fetchCompetitions();
-    }, []);
-    useEffect(() => {
-      const fetchCompetitions = async () => {
-        try {
-          const response = await fetch(`${API_URL}/admin/dashboard`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
-            },
-          });
-  
-          const data = await response.json();
-  
-          if (data.error) {
-            toast.error(data.error);
-          } else {
-            setData1(data); // assuming setData exists
-            console.log(data);
-          }
-        } catch (error) {
-          console.error("Error fetching competitions:", error);
-          toast.error("An error occurred. Please try again.");
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/dashboard`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          toast.error(data.error);
+        } else {
+          setData1(data); // assuming setData exists
+          console.log(data);
         }
-      };
-  
-      fetchCompetitions();
-    }, []);
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
+  function exportToCSV(data, filename = 'export.csv') {
+    // Convert nested objects to flat array structure
+    const flattenObject = (obj, prefix = '') => {
+        const result = [];
+        
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const value = obj[key];
+                const newKey = prefix ? `${prefix}.${key}` : key;
+                
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    result.push(...flattenObject(value, newKey));
+                } else {
+                    result.push([newKey, value]);
+                }
+            }
+        }
+        
+        return result;
+    };
+
+    // Create CSV content
+    let csvContent = '';
+    
+    if (Array.isArray(data)) {
+        // Handle array data
+        if (data.length > 0) {
+            const headers = Object.keys(data[0]).join(',');
+            csvContent += headers + '\n';
+            
+            data.forEach(item => {
+                const row = Object.values(item).map(value => 
+                    `"${String(value).replace(/"/g, '""')}"`
+                ).join(',');
+                csvContent += row + '\n';
+            });
+        }
+    } else if (typeof data === 'object') {
+        // Handle object data
+        const flattened = flattenObject(data);
+        csvContent = 'Key,Value\n';
+        flattened.forEach(([key, value]) => {
+            csvContent += `"${key.replace(/"/g, '""')}","${String(value).replace(/"/g, '""')}"\n`;
+        });
+    }
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
       <div className="flex flex-wrap justify-between px-8 gap-5">
@@ -122,7 +182,11 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="!flex !items-center">
+          <Button onClick={()=>{
+            exportToCSV(data1, 'users')
+            exportToCSV(data, 'fitness')
+            exportToCSV(users, 'nutrition')
+          }} variant="outline" className="!flex !items-center">
             <svg
               width="17"
               height="17"
@@ -162,14 +226,8 @@ const Dashboard = () => {
       </div> */}
       <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          {/* <ChartBarStacked title="" className="w-full lg:w-[50%]" /> */}
-          <NutritionTracking className="w-full lg:w-[100%]" />
-        </div>
-      </div>
-      <div className="px-4 lg:px-6">
-        <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <HealthMetrics title="" className="w-full lg:w-[35%]" />
-          <ActiveChallenges className="w-full lg:w-[65%]" />
+          <HealthMetrics data={data} title="" className="w-full lg:w-[35%]" />
+          <ActiveChallenges data={data1} className="w-full lg:w-[65%]" />
         </div>
       </div>
       {/* <div className="px-4 lg:px-6">
@@ -181,10 +239,15 @@ const Dashboard = () => {
       <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
           {/* <SupportTicket title="" className="w-full lg:w-[50%]" /> */}
-          <SurveyResults className="w-full lg:w-[100%]" />
+          <SurveyResults data={data1} className="w-full lg:w-[100%]" />
         </div>
       </div>
-
+      <div className="px-4 lg:px-6">
+        <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
+          {/* <ChartBarStacked title="" className="w-full lg:w-[50%]" /> */}
+          <NutritionTracking data={users} className="w-full lg:w-[100%]" />
+        </div>
+      </div>
     </div>
   );
 };

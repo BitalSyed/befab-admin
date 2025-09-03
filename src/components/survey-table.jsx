@@ -231,11 +231,15 @@ export default function SurveyTables({ data, users, allusers, d }) {
                         <DropdownMenuItem onClick={() => navigate(`/surveys/${row._id}`)}>
                           See Responses
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/surveys/modify/${row._id}`)}>
+                          Modify
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => deleteSurvey(row._id)}>
                           Delete
                         </DropdownMenuItem>
                         {d &&
                           !row.responses.some(r => r.user === d._id) &&
+                          !row.exclude.some(r => r === d.username) &&
                           row.audience !== "members" &&
                           (() => {
                             const createdDate = new Date(row.createdAt);

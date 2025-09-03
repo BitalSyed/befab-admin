@@ -22,6 +22,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useEffect, useState } from "react";
 
 export const description = "A stacked area chart with expand stacking";
 
@@ -38,20 +39,30 @@ const chartData = [
 
 const chartConfig = {
   desktop: {
-    label: "Total Users",
+    label: "Protein",
     color: "#3B82F6",
   },
   mobile: {
-    label: "Active Users",
+    label: "Carb",
     color: "#10B981",
   },
   other: {
-    label: "New Signups",
+    label: "Fat",
     color: "#F59E0B",
   },
 };
 
-export function NutritionTracking({className}) {
+export function NutritionTracking({className, data}) {
+  const [chartData, setChallenges] = useState([]);
+    useEffect(() => {
+      if (!data) return;
+      console.log(data);
+      setChallenges(
+        data.trends?.macros?.map((e) => {
+          return { month: new Date(e._id).toLocaleDateString('en-US', { weekday: 'short' }), desktop: e.avgProtein, mobile: e.avgCarbs, other: e.avgFats };
+        })
+      );
+    }, [data]);
   return (
     <Card className={className}>
       <CardHeader>

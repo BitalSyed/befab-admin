@@ -50,6 +50,35 @@ export default function SurveyResponsesPage() {
     fetchSurvey();
   }, [id]);
 
+  function DeleteResponse(i) {
+    const fetchSurvey = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/admin/surveys/delete/${id}/${i}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+            },
+          }
+        );
+
+        const result = await response.json();
+
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Error fetching survey:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+    if (confirm("Are you sure to delete that resonse?")) fetchSurvey();
+  }
+
   // Filter responses based on search
   const filteredResponses = data.filter((resp) => {
     const usernameMatch = resp.user?.username
@@ -129,22 +158,52 @@ export default function SurveyResponsesPage() {
                 >
                   <CardHeader
                     className="flex justify-between items-center cursor-pointer bg-gray-50 p-3"
-                    onClick={() =>
-                      setExpandedIndex(isExpanded ? -1 : idx)
-                    }
+                    onClick={() => setExpandedIndex(isExpanded ? -1 : idx)}
                   >
                     <span className="font-semibold text-gray-800">
                       {resp.user?.username || "Unknown User"}
                     </span>
+                    <span className="font-semibold text-gray-800">
+                      {resp.user?.firstName || "Unknown User"}{" "}
+                      {resp.user?.lastName || "Unknown User"}
+                    </span>
+                    <span className="font-semibold text-gray-800">
+                      {resp.user?.userId || "UserId: N/A"}
+                    </span>
                     {isExpanded ? <ChevronUp /> : <ChevronDown />}
+                  </CardHeader>
+                  <CardHeader className="flex justify-evenly items-center bg-gray-50 p-3">
+                    <span className="font-semibold text-gray-800">
+                      {resp.user?.email || "Unknown User"}
+                    </span>
+                    <span className="font-semibold text-gray-800">
+                      {resp.user?.role || "Unknown User"}{" "}
+                      {resp.user?.lastName || "Unknown User"}
+                    </span>
+                    <span className="font-semibold text-gray-800">
+                      Active: {resp.user?.isActive ? "Yes" : "No"}
+                    </span>
+                    <span className="font-semibold text-gray-800">
+                      Locked: {resp.user?.isLocked ? "Yes" : "No"}
+                    </span>
+                    <span
+                      onClick={() => DeleteResponse(resp._id)}
+                      className="font-semibold text-white bg-red-800 rounded-md px-2 py-1 cursor-pointer"
+                    >
+                      Delete Resonse (Deleting May Require new Response)
+                    </span>
                   </CardHeader>
                   {isExpanded && (
                     <CardContent className="bg-white">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-blue-600">Question</TableHead>
-                            <TableHead className="text-green-600">Answer</TableHead>
+                            <TableHead className="text-blue-600">
+                              Question
+                            </TableHead>
+                            <TableHead className="text-green-600">
+                              Answer
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -165,7 +224,9 @@ export default function SurveyResponsesPage() {
                               Submitted At
                             </TableCell>
                             <TableCell className="whitespace-normal break-words">
-                              {new Date(resp.submittedAt).toLocaleString('en-US')}
+                              {new Date(resp.submittedAt).toLocaleString(
+                                "en-US"
+                              )}
                             </TableCell>
                           </TableRow>
                         </TableBody>

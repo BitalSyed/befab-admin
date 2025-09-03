@@ -7,7 +7,7 @@ const ActivityFeed = ({data}) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Activity Feed */}
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-3">
         <CardHeader className="flex py-2 flex-row items-center justify-between">
           <CardTitle>Recent Activity Feed</CardTitle>
         </CardHeader>
@@ -30,18 +30,18 @@ const ActivityFeed = ({data}) => {
       </Card>
 
       {/* Quick Actions */}
-      <Card className="md:col-span-1">
+      {/* <Card className="md:col-span-1">
         <CardHeader>
           <CardTitle className="py-2">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <QuickActionButton icon={<Plus className="w-4 h-4" />} label="Add New Food" bg="bg-blue-100" text="text-blue-900" />
-          {/* <QuickActionButton icon={<Barcode className="w-4 h-4" />} label="Approve Barcode Scans" bg="bg-green-100" text="text-green-900" badge="12" />
+          <QuickActionButton icon={<Barcode className="w-4 h-4" />} label="Approve Barcode Scans" bg="bg-green-100" text="text-green-900" badge="12" />
           <QuickActionButton icon={<Flag className="w-4 h-4" />} label="Review Flagged Foods" bg="bg-yellow-100" text="text-yellow-900" badge="5" />
           <QuickActionButton icon={<Bell className="w-4 h-4" />} label="Send Nutrition Reminder" bg="bg-purple-100" text="text-purple-900" />
-          <QuickActionButton icon={<Utensils className="w-4 h-4" />} label="Create Meal Template" bg="bg-orange-100" text="text-orange-900" /> */}
+          <QuickActionButton icon={<Utensils className="w-4 h-4" />} label="Create Meal Template" bg="bg-orange-100" text="text-orange-900" />
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };

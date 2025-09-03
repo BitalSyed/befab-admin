@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BsFillDropletFill } from "react-icons/bs";
 import { FaDumbbell, FaRunning } from "react-icons/fa";
 
@@ -36,7 +36,22 @@ const challenges = [
   },
 ];
 
-const ActiveChallenges = ({ className }) => {
+const ActiveChallenges = ({ className, data }) => {
+  const [challenges, setChallenges]=useState([])
+  useEffect(()=>{
+    if(!data) return
+    console.log(data)
+    setChallenges(data.competitions?.map(e=>{
+      return {
+        icon: BsFillDropletFill,
+    name: e.category,
+    participants: e.participants,
+    completion: e.leaderboard.score.toFixed(2),
+    status: "Active",
+    color: 'bg-blue-100 text-yellow-500 rounded-full box-border text-lg w-8 h-8 p-2'
+      }
+    }))
+  }, [data])
   return (
     <div className={cn("bg-white rounded-xl py-6 shadow-md", className)}>
       <h2 className="text-lg font-semibold mb-4 text-gray-800 px-4">
@@ -53,17 +68,14 @@ const ActiveChallenges = ({ className }) => {
             </tr>
           </thead>
           <tbody>
-            {challenges.map((c, index) => (
+            {challenges&&challenges.map((c, index) => (
               <tr key={index} className="border-b hover:bg-gray-50 transition">
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
                     <span className="font-medium text-gray-800 flex">
-                      <c.icon className={c.color} />
+                      {/* <c.icon className={c.color} /> */}
                       <div className="flex flex-col ml-2">
                         {c.name}
-                        <span className="text-xs text-gray-500">
-                          {c.endsIn}
-                        </span>
                       </div>
                     </span>
                   </div>
@@ -73,19 +85,16 @@ const ActiveChallenges = ({ className }) => {
                     {c.participants.toLocaleString()}
                   </span>
                   <br />
-                  <span className="text-xs text-gray-500 ml-1">
-                    +{c.today} today
-                  </span>
                 </td>
                 <td className="px-4 py-3 w-1/3">
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-green-500 h-2 rounded-full"
-                      style={{ width: `${c.completion}%` }}
+                      style={{ width: `${100}%` }}
                     ></div>
                   </div>
                   <span className="text-xs text-gray-500">
-                    {c.completion}% completed
+                    {c.completion} Max Score
                   </span>
                 </td>
                 <td className="px-4 py-3">

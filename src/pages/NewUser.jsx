@@ -25,7 +25,7 @@ const NewUser = () => {
         token: getCookie("skillrextech_auth"),
         firstName,
         lastName,
-        username: userName+"@Befab", 
+        username: userName+"@befab", 
         email,
         passwordHash: password,
         role,

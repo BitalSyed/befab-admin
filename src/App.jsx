@@ -31,6 +31,8 @@ import SurveyResponsesPage from "./pages/SurveyResponsesPage";
 import TakeSurveyPage from "./pages/TakeSurveyPage.jsx";
 import Messaging from "./pages/Messaging";
 import CreateGoalPage from "./pages/CreateGoalPage";
+import Notifcations from "./pages/Notifcations";
+import ModifySurvey from "./pages/ModifySurvey";
 
 function App() {
   const navigate = useNavigate();
@@ -135,11 +137,13 @@ function App() {
                 <Route path="/goals" element={<Goals />} />
                 <Route path="/create-goal" element={<CreateGoalPage />} />
                 <Route path="/surveys" element={<Surveys d={data} />} />
+                <Route path="/surveys/modify/:id" element={<ModifySurvey d={data} />} />
                 <Route path="/surveys/:id" element={<SurveyResponsesPage d={data} />} />
                 <Route path="/surveys/take/:id" element={<TakeSurveyPage d={data} />} />
                 <Route path="/nutrition" element={<Nutrition />} />
                 <Route path="/fitness" element={<Fitness />} />
                 <Route path="/messaging-management" element={<Messaging userId={data._id} />} />
+                <Route path="/notifications" element={<Notifcations userId={data._id} />} />
               </Routes>
             </div>
           </div>

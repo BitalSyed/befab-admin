@@ -3,9 +3,38 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { FaArrowDown, FaCaretDown, FaChevronDown } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { API_URL, deleteCookie } from "./cookieUtils";
+import { API_URL, deleteCookie, getCookie } from "./cookieUtils";
+import { useEffect, useState } from "react";
 
 export function SiteHeader({ title, data }) {
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`${API_URL}/admin/notifications/get`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          toast.error(data.error);
+          return;
+        }
+
+        setNotifications(data.notifications);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to fetch notifications.");
+      }
+    };
+
+    fetchNotifications();
+  }, []);
   return (
     <header className="flex md:flex-row flex-col justify-center sticky top-0 bg-white z-[100] h-28 md:h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -18,7 +47,7 @@ export function SiteHeader({ title, data }) {
         <div className="ml-auto flex items-center gap-2">
           <div className=" z-50">
             <div className="flex items-center justify-end lg:justify-evenly gap-5 lg:gap-8">
-              <div className="hidden md:flex w-full px-4 py-2 rounded outline-none border transition-all">
+              {/* <div className="hidden md:flex w-full px-4 py-2 rounded outline-none border transition-all">
                 <input
                   type="text"
                   placeholder="Search something..."
@@ -32,29 +61,29 @@ export function SiteHeader({ title, data }) {
                 >
                   <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
                 </svg>
-              </div>
+              </div> */}
               <div className="flex items-center lg:space-x-6">
-                <Link className="relative" to={"/"}>
-                  <svg
-                    width="18"
-                    height="20"
-                    className="relative"
-                    viewBox="0 0 15 17"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.02016 0.126953C6.46783 0.126953 6.02159 0.57319 6.02159 1.12552V1.72467C3.7436 2.18651 2.02731 4.20237 2.02731 6.61767V7.20433C2.02731 8.67098 1.48745 10.0877 0.513847 11.1861L0.282928 11.4451C0.0208028 11.7385 -0.0416079 12.1597 0.117539 12.5186C0.276687 12.8775 0.635548 13.1084 1.02874 13.1084H13.0116C13.4048 13.1084 13.7605 12.8775 13.9228 12.5186C14.0851 12.1597 14.0195 11.7385 13.7574 11.4451L13.5265 11.1861C12.5529 10.0877 12.013 8.6741 12.013 7.20433V6.61767C12.013 4.20237 10.2967 2.18651 8.01874 1.72467V1.12552C8.01874 0.57319 7.5725 0.126953 7.02016 0.126953ZM8.43377 15.5206C8.80823 15.1461 9.01731 14.6374 9.01731 14.107H7.02016H5.02302C5.02302 14.6374 5.2321 15.1461 5.60656 15.5206C5.98103 15.895 6.48967 16.1041 7.02016 16.1041C7.55065 16.1041 8.0593 15.895 8.43377 15.5206Z"
-                      fill="#6B7280"
-                    />
-                  </svg>
-                    <div className="bg-red-500 w-2 h-2 absolute -top-1.5 -right-1 rounded-full"></div>
+                <Link className="relative" to={"/notifications"}>
+                    <svg
+                      width="18"
+                      height="20"
+                      className="relative"
+                      viewBox="0 0 15 17"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7.02016 0.126953C6.46783 0.126953 6.02159 0.57319 6.02159 1.12552V1.72467C3.7436 2.18651 2.02731 4.20237 2.02731 6.61767V7.20433C2.02731 8.67098 1.48745 10.0877 0.513847 11.1861L0.282928 11.4451C0.0208028 11.7385 -0.0416079 12.1597 0.117539 12.5186C0.276687 12.8775 0.635548 13.1084 1.02874 13.1084H13.0116C13.4048 13.1084 13.7605 12.8775 13.9228 12.5186C14.0851 12.1597 14.0195 11.7385 13.7574 11.4451L13.5265 11.1861C12.5529 10.0877 12.013 8.6741 12.013 7.20433V6.61767C12.013 4.20237 10.2967 2.18651 8.01874 1.72467V1.12552C8.01874 0.57319 7.5725 0.126953 7.02016 0.126953ZM8.43377 15.5206C8.80823 15.1461 9.01731 14.6374 9.01731 14.107H7.02016H5.02302C5.02302 14.6374 5.2321 15.1461 5.60656 15.5206C5.98103 15.895 6.48967 16.1041 7.02016 16.1041C7.55065 16.1041 8.0593 15.895 8.43377 15.5206Z"
+                        fill="#6B7280"
+                      />
+                    </svg>
+                  {notifications && notifications.length > 0 && (<div className="bg-red-500 w-2 h-2 absolute -top-1.5 -right-1 rounded-full"></div>)}
                 </Link>
               </div>
               <div className="dropdown-menu relative flex shrink-0 group">
                 <div className="flex items-center text-sm">
                   <img
-                    src={API_URL+(data.profilePicture||'/BeFab.png')}
+                    src={API_URL + (data.profilePicture || "/BeFab.png")}
                     alt="profile-pic"
                     className="w-9 h-9 rounded-full cursor-pointer mr-2"
                   />{" "}
@@ -62,7 +91,7 @@ export function SiteHeader({ title, data }) {
                 </div>
                 <div className="dropdown-content hidden group-hover:block shadow-md p-2 bg-white rounded-md absolute top-9 right-0 w-56">
                   <div className="w-full">
-                    <a
+                    {/* <a
                       href="javascript:void(0)"
                       className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out"
                     >
@@ -78,8 +107,11 @@ export function SiteHeader({ title, data }) {
                       </svg>
                       Account
                     </a>
-                    <hr className="my-2 -mx-2" />
-                    <a className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out">
+                    <hr className="my-2 -mx-2" /> */}
+                    <Link
+                      to={"/"}
+                      className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
@@ -96,9 +128,10 @@ export function SiteHeader({ title, data }) {
                         />
                       </svg>
                       Dashboard
-                    </a>
-                    <a
-                      href="javascript:void(0)"
+                    </Link>
+                    <hr />
+                    <Link
+                      to={"/new-video"}
                       className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out"
                     >
                       <svg
@@ -119,10 +152,10 @@ export function SiteHeader({ title, data }) {
                           data-original="#000000"
                         />
                       </svg>
-                      Posts
-                    </a>
-                    <a
-                      href="javascript:void(0)"
+                      Post Video
+                    </Link>
+                    <Link
+                      to={"/new-news"}
                       className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out"
                     >
                       <svg
@@ -141,11 +174,13 @@ export function SiteHeader({ title, data }) {
                           />
                         </g>
                       </svg>
-                      Schedules
-                    </a>
+                      Schedule Letter
+                    </Link>
                     <a
-                      href="javascript:void(0)"
-                      onClick={()=>{deleteCookie('skillrextech_auth'); window.location.reload();}}
+                      onClick={() => {
+                        deleteCookie("skillrextech_auth");
+                        window.location.reload();
+                      }}
                       className="text-sm text-gray-800 cursor-pointer flex items-center p-2 rounded-md hover:bg-gray-100 dropdown-item transition duration-300 ease-in-out"
                     >
                       <svg
@@ -168,21 +203,21 @@ export function SiteHeader({ title, data }) {
         </div>
       </div>
       <hr className="w-[97%] block md:hidden" />
-        <div className="flex md:hidden w-full px-4 py-2 max-w-[97%] rounded outline-none border transition-all">
-                <input
-                  type="text"
-                  placeholder="Search something..."
-                  className="w-full text-sm bg-transparent rounded outline-none pr-2"
-                />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 192.904 192.904"
-                  width="16px"
-                  className="cursor-pointer fill-gray-400"
-                >
-                  <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
-                </svg>
-              </div>
+      <div className="flex md:hidden w-full px-4 py-2 max-w-[97%] rounded outline-none border transition-all">
+        <input
+          type="text"
+          placeholder="Search something..."
+          className="w-full text-sm bg-transparent rounded outline-none pr-2"
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 192.904 192.904"
+          width="16px"
+          className="cursor-pointer fill-gray-400"
+        >
+          <path d="m190.707 180.101-47.078-47.077c11.702-14.072 18.752-32.142 18.752-51.831C162.381 36.423 125.959 0 81.191 0 36.422 0 0 36.423 0 81.193c0 44.767 36.422 81.187 81.191 81.187 19.688 0 37.759-7.049 51.831-18.751l47.079 47.078a7.474 7.474 0 0 0 5.303 2.197 7.498 7.498 0 0 0 5.303-12.803zM15 81.193C15 44.694 44.693 15 81.191 15c36.497 0 66.189 29.694 66.189 66.193 0 36.496-29.692 66.187-66.189 66.187C44.693 147.38 15 117.689 15 81.193z"></path>
+        </svg>
+      </div>
     </header>
   );
 }

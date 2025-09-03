@@ -214,7 +214,7 @@ export default function ChatDashboard({ userId }) {
   return (
     <div className="grid grid-cols-12 mt-5 mx-6">
       {/* LEFT: All Users + Search */}
-      <aside className="col-span-3 border-r bg-white flex flex-col mr-5 rounded-lg">
+      <aside className="col-span-3 border-r bg-white flex flex-col mr-5 rounded-lg max-h-[80vh] oveflow-y-auto">
         <div className="p-4 font-semibold">Users</div>
         <div className="px-4 pb-2">
           <Input
