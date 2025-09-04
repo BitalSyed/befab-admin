@@ -66,7 +66,7 @@ const SurveyResults = ({ className, data }) => {
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
                 className={`${metric.color} h-2.5 rounded-full`}
-                style={{ width: metric.width }}
+                style={{ width: '100%' }}
               ></div>
             </div>
           </div>

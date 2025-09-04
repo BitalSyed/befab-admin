@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, BarChart2, Edit, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,98 +20,18 @@ import {
 import { API_URL, getCookie } from "./cookieUtils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
-
-const surveyTable = [
-  {
-    title: "User Satisfaction Survey",
-    questions: "12 questions",
-    created: "Jun 15, 2023",
-    status: "Active",
-    statusColor: "green",
-    duration: "Jul 15 - Jul 15, 2023",
-    audience: "All Users",
-    responses: "1,245",
-  },
-  {
-    title: "Fitness Goal Assessment",
-    questions: "8 questions",
-    created: "Jun 02, 2023",
-    status: "Active",
-    statusColor: "green",
-    duration: "∞ Unlimited",
-    audience: "New Users",
-    responses: "3,872",
-  },
-  {
-    title: "Nutrition Feature Feedback",
-    questions: "10 questions",
-    created: "May 28, 2023",
-    status: "Scheduled",
-    statusColor: "yellow",
-    duration: "Jul 01 - Jul 31, 2023",
-    audience: "Premium Users",
-    responses: "0",
-  },
-  {
-    title: "App Experience Survey",
-    questions: "15 questions",
-    created: "May 15, 2023",
-    status: "Expired",
-    statusColor: "red",
-    duration: "May 15 - Jun 15, 2023",
-    audience: "All Users",
-    responses: "2,134",
-  },
-  {
-    title: "New Feature Feedback",
-    questions: "6 questions",
-    created: "May 10, 2023",
-    status: "Draft",
-    statusColor: "gray",
-    duration: "Not Set",
-    audience: "Not Set",
-    responses: "0",
-  },
-];
-
-const activityTable = [
-  {
-    name: "John Smith",
-    avatar: "https://i.pravatar.cc/40?u=johnsmith",
-    action: "Created",
-    actionColor: "green",
-    survey: "Nutrition Feature Feedback",
-    date: "May 28, 2023 - 14:23",
-  },
-  {
-    name: "Sarah Johnson",
-    avatar: "https://i.pravatar.cc/40?u=sarahjohnson",
-    action: "Edited",
-    actionColor: "blue",
-    survey: "User Satisfaction Survey",
-    date: "Jun 16, 2023 - 09:45",
-  },
-  {
-    name: "John Smith",
-    avatar: "https://i.pravatar.cc/40?u=johnsmith2",
-    action: "Deleted",
-    actionColor: "red",
-    survey: "Weekly Feedback Survey",
-    date: "Jun 10, 2023 - 11:32",
-  },
-  {
-    name: "Michael Brown",
-    avatar: "https://i.pravatar.cc/40?u=michaelbrown",
-    action: "Published",
-    actionColor: "purple",
-    survey: "Fitness Goal Assessment",
-    date: "Jun 02, 2023 - 15:10",
-  },
-];
+import { useEffect, useState } from "react";
 
 export default function SurveyTables({ data, users, allusers, d }) {
   const navigate = useNavigate();
+
+  // 🔹 NEW STATES for custom popup
+  const [showNotify, setShowNotify] = useState(false);
+  const [notifyUsers, setNotifyUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]); // multi select
+  const [notifyMsg, setNotifyMsg] = useState("");
+  const [targetAudience, setTargetAudience] = useState("all"); // audience filter
+
   function deleteSurvey(id) {
     fetch(`${API_URL}/admin/surveys/${id}`, {
       method: "DELETE",
@@ -120,24 +40,85 @@ export default function SurveyTables({ data, users, allusers, d }) {
       },
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to delete video");
+        if (!res.ok) throw new Error("Failed to delete survey");
         return res.json();
       })
-      .then((data) => {
-        console.log("Deleted successfully:", data);
+      .then(() => {
         toast.success("Survey deleted successfully");
         window.location.reload();
       })
-      .catch((err) => {
-        console.error("Error deleting video:", err.message);
-        toast.error("Failed to delete video");
+      .catch(() => {
+        toast.error("Failed to delete survey");
       });
   }
-  useEffect(()=>{
+
+  useEffect(() => {
     console.log(users, allusers);
-  }, [users, allusers])
+  }, [users, allusers]);
+
+  // 🔹 fetch users when popup opens
+  useEffect(() => {
+    if (showNotify) {
+      fetch(`${API_URL}/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => setNotifyUsers(data))
+        .catch(() => toast.error("Failed to fetch users"));
+    }
+  }, [showNotify]);
+
+  // 🔹 handlers for multi-select
+  const handleAddUser = (username) => {
+    if (username && !selectedUsers.includes(username)) {
+      setSelectedUsers([...selectedUsers, username]);
+    }
+  };
+
+  const handleRemoveUser = (username) => {
+    setSelectedUsers(selectedUsers.filter((u) => u !== username));
+  };
+
+  // 🔹 send notification
+  const sendNotification = async () => {
+    if (!selectedUsers.length) {
+      toast.error("Please select at least one user");
+      return;
+    }
+    if (!notifyMsg.trim()) {
+      toast.error("Message cannot be empty");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/admin/notify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+        },
+        body: JSON.stringify({
+          usernames: selectedUsers, // array
+          message: notifyMsg,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to send");
+
+      toast.success("Notification sent");
+      setShowNotify(false);
+      setSelectedUsers([]);
+      setNotifyMsg("");
+    } catch (err) {
+      toast.error(err.message || "Error sending notification");
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Survey Table */}
       <Card className="p-0 rounded-md overflow-hidden border border-gray-200">
         <Table>
           <TableHeader className="bg-gray-50">
@@ -192,15 +173,12 @@ export default function SurveyTables({ data, users, allusers, d }) {
                     {(() => {
                       const createdDate = new Date(row.createdAt);
                       const today = new Date();
-                      today.setHours(0, 0, 0, 0); // strip time for accurate comparison
-
+                      today.setHours(0, 0, 0, 0);
                       const isExpired = createdDate < today;
-
                       const status = isExpired ? "Expired" : "Active";
                       const colorClasses = isExpired
                         ? "bg-red-100 text-red-800"
                         : "bg-green-100 text-green-800";
-
                       return (
                         <span
                           className={`text-xs px-2 py-1 rounded-full font-medium ${colorClasses}`}
@@ -210,7 +188,6 @@ export default function SurveyTables({ data, users, allusers, d }) {
                       );
                     })()}
                   </TableCell>
-
                   <TableCell className="text-gray-500 text-sm">
                     {row.durationMin}
                   </TableCell>
@@ -228,28 +205,54 @@ export default function SurveyTables({ data, users, allusers, d }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/surveys/${row._id}`)}>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/surveys/${row._id}`)}
+                        >
                           See Responses
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/surveys/modify/${row._id}`)}>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/surveys/modify/${row._id}`)}
+                        >
                           Modify
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => deleteSurvey(row._id)}>
                           Delete
                         </DropdownMenuItem>
+                        {(() => {
+                          const createdDate = new Date(row.createdAt);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const isExpired = createdDate < today;
+
+                          if (isExpired) return null; // don’t render anything if expired
+
+                          return (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setTargetAudience(row.audience || "all");
+                                setShowNotify(true);
+                              }}
+                            >
+                              Send Notification
+                            </DropdownMenuItem>
+                          );
+                        })()}
+
                         {d &&
-                          !row.responses.some(r => r.user === d._id) &&
-                          !row.exclude.some(r => r === d.username) &&
+                          !row.responses.some((r) => r.user === d._id) &&
+                          !row.exclude.some((r) => r === d.username) &&
                           row.audience !== "members" &&
                           (() => {
                             const createdDate = new Date(row.createdAt);
                             const today = new Date();
-                            today.setHours(0, 0, 0, 0); // strip time for accurate comparison
-
+                            today.setHours(0, 0, 0, 0);
                             const isExpired = createdDate < today;
-
                             return !isExpired ? (
-                              <DropdownMenuItem onClick={() => navigate(`/surveys/take/${row._id}`)}>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(`/surveys/take/${row._id}`)
+                                }
+                              >
                                 Take Survey
                               </DropdownMenuItem>
                             ) : null;
@@ -263,6 +266,7 @@ export default function SurveyTables({ data, users, allusers, d }) {
         </Table>
       </Card>
 
+      {/* Recent Survey Activity */}
       <Card className="p-0 rounded-md overflow-hidden border border-gray-200">
         <div className="border-b px-6 pt-5 pb-3">
           <h2 className="text-sm font-semibold">Recent Survey Activity</h2>
@@ -305,9 +309,7 @@ export default function SurveyTables({ data, users, allusers, d }) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full bg-${entry.actionColor}-100 text-${entry.actionColor}-800`}
-                    >
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800">
                       {(entry.responses.length / allusers.length) * 100
                         ? (
                             (entry.responses.length / allusers.length) *
@@ -329,6 +331,82 @@ export default function SurveyTables({ data, users, allusers, d }) {
           </TableBody>
         </Table>
       </Card>
+
+      {/* 🔹 Custom Popup */}
+      {showNotify && (
+        <div className="fixed inset-0 bg-[#925f606a] backdrop-blur-xs bg-opacity-50 flex items-center justify-center z-100">
+          <div className="bg-white rounded-lg p-6 w-[400px] shadow-lg relative">
+            <h2 className="text-lg font-semibold mb-4">Send Notification</h2>
+
+            {/* Selected user tags */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedUsers.map((u, i) => (
+                <span
+                  key={i}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {u}
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveUser(u)}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+
+            <label className="block text-sm font-medium mb-1">Add User</label>
+            <select
+              onChange={(e) => {
+                handleAddUser(e.target.value);
+                e.target.value = "";
+              }}
+              className="border rounded-md w-full p-2 mb-4"
+            >
+              <option value="">-- Select User --</option>
+              {notifyUsers
+                .filter((u) => {
+                  if (targetAudience === "admins") return u.role === "admin";
+                  if (targetAudience === "members") return u.role === "member";
+                  return true;
+                })
+                .filter((u) => !selectedUsers.includes(u.username))
+                .map((u, i) => (
+                  <option key={i} value={u.username}>
+                    {u.username}
+                  </option>
+                ))}
+            </select>
+
+            <label className="block text-sm font-medium mb-1">Message</label>
+            <textarea
+              value={notifyMsg}
+              onChange={(e) => setNotifyMsg(e.target.value)}
+              className="border rounded-md w-full p-2 h-24 mb-4"
+              placeholder="Enter notification message"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded-md"
+                onClick={() => {
+                  setShowNotify(false);
+                  setSelectedUsers([]);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#925f60] text-white rounded-md"
+                onClick={sendNotification}
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

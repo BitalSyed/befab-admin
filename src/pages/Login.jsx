@@ -1,27 +1,24 @@
-import { GalleryVerticalEnd } from "lucide-react"
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { LoginForm } from "@/components/login-form"
-import { FaDumbbell } from "react-icons/fa"
-import { getCookie } from "@/components/cookieUtils"
+import { LoginForm } from "@/components/login-form";
+import { FaDumbbell } from "react-icons/fa";
+import { getCookie } from "@/components/cookieUtils";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 export default function Login() {
-    const navigate = useNavigate();
-    useEffect(()=>{
-        if(getCookie('skillrextech_auth')){
-          navigate('/', {replace: true})
-        }
-      }, [])
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (getCookie("skillrextech_auth")) {
+      navigate("/", { replace: true });
+    }
+  }, []);
   return (
     <div className="grid min-h-svh lg:grid-cols-2 fixed top-0 left-0 w-full z-[101] bg-secondary">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className=" text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <FaDumbbell className="!size-8 text-blue-500" />
-            </div>
-            BeFab
+          <a href="#" className="flex justify-start items-center rounded-md">
+            <img src="/logo.png" alt="Logo" className="w-56 mx-auto py-2" />
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -38,5 +35,5 @@ export default function Login() {
         />
       </div>
     </div>
-  )
+  );
 }

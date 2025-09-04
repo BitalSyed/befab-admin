@@ -30,38 +30,41 @@ export function NavDocuments({ items, title, set }) {
   const { isMobile } = useSidebar();
   const location = useLocation();
   useEffect(() => {
+    if (!items) return;
     items.map((item) => {
       location.pathname == item.url ? set(item.name) : "";
     });
-  }, [location.pathname]);
+  }, [location.pathname, items]);
   useEffect(() => {
+    if (!items) return;
     items.map((item) => {
       location.pathname == item.url ? set(item.name) : "";
     });
-  }, []);
+  }, [items]);
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden !text-[#9CA3AF]">
       <SidebarGroupLabel className="!text-[#9CA3AF] px-4">
         {title}
       </SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <Link
-                to={item.url}
-                className={`px-5 !py-4 ${
-                  location.pathname == item.url
-                    ? "bg-[#1F2937] hover:!bg-[#1F2937] hover:!text-[#9CA3AF]"
-                    : ""
-                }`}
-              >
-                <item.icon />
-                <span>{item.name}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+        {items &&
+          items.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild>
+                <Link
+                  to={item.url}
+                  className={`px-5 !py-4 ${
+                    location.pathname == item.url
+                      ? "bg-[#1F2937] hover:!bg-[#1F2937] hover:!text-[#9CA3AF]"
+                      : ""
+                  }`}
+                >
+                  <item.icon />
+                  <span>{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
       </SidebarMenu>
     </SidebarGroup>
   );

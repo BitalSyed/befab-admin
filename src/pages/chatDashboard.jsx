@@ -105,7 +105,7 @@ export default function ChatDashboard({ userId }) {
       typeof msg.sender === "object" && msg.sender._id
         ? String(msg.sender._id)
         : String(msg.sender);
-        // console.log(senderId)
+    // console.log(senderId)
     return senderId === String(userId);
   };
 
@@ -199,7 +199,8 @@ export default function ChatDashboard({ userId }) {
 
     socketRef.current.emit("sendMessage", {
       chatId: activeChat._id,
-      senderId: userId,
+      // senderId: userId,
+      senderId: rightPaneUser._id,
       content,
     });
     setInput("");
@@ -214,7 +215,7 @@ export default function ChatDashboard({ userId }) {
   return (
     <div className="grid grid-cols-12 mt-5 mx-6">
       {/* LEFT: All Users + Search */}
-      <aside className="col-span-3 border-r bg-white flex flex-col mr-5 rounded-lg max-h-[80vh] oveflow-y-auto">
+      <aside className="col-span-3 border-r bg-white flex flex-col mr-5 rounded-lg oveflow-y-auto py-5">
         <div className="p-4 font-semibold">Users</div>
         <div className="px-4 pb-2">
           <Input
@@ -224,7 +225,7 @@ export default function ChatDashboard({ userId }) {
           />
         </div>
         <ScrollArea className="flex-1">
-          <div className="space-y-1">
+          <div className="space-y-1 max-h-[70vh] overflow-y-auto">
             {filteredUsers.map((u) => (
               <div
                 key={u._id}
@@ -283,12 +284,12 @@ export default function ChatDashboard({ userId }) {
                 <div
                   key={msg._id || msg.tempId}
                   className={`flex ${
-                    amISender(msg) ? "justify-end" : "justify-start"
+                    !amISender(msg) ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
                     className={`max-w-xs p-3 rounded-lg text-sm my-1 ${
-                      amISender(msg)
+                      !amISender(msg)
                         ? "bg-blue-500 text-white"
                         : "bg-gray-100 text-gray-900"
                     }`}
@@ -346,7 +347,9 @@ export default function ChatDashboard({ userId }) {
                   </p>
                 )}
                 {rightPaneUser.email && (
-                  <p className="text-sm text-gray-500">{rightPaneUser.email}</p>
+                  <p className="text-sm text-gray-500 break-words max-w-full">
+                    {rightPaneUser.email}
+                  </p>
                 )}
                 <Button
                   size="sm"

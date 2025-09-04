@@ -1,5 +1,5 @@
 import { API_URL, getCookie } from "@/components/cookieUtils";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaCheck, FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,9 +12,48 @@ const NewSurvey = () => {
   const [audience, setAudience] = useState("all");
   const [dueDate, setDueDate] = useState("");
   const [durationMin, setDurationMin] = useState("");
+  const [data, setData] = useState([]);
   const [questions, setQuestions] = useState([
     { q: "", kind: "text", options: [] },
   ]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchSurvey = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          setData(result);
+          console.log(result);
+        }
+      } catch (error) {
+        console.error("Error fetching survey:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchSurvey();
+  }, []);
+
+  const getFilteredUsers = () => {
+    if (audience === "admins") {
+      return data.filter((u) => u.role === "admin");
+    } else if (audience === "members") {
+      return data.filter((u) => u.role === "member");
+    }
+    return data; // all
+  };
 
   const handleQuestionChange = (index, field, value) => {
     const updated = [...questions];
@@ -56,6 +95,9 @@ const NewSurvey = () => {
       return;
     }
 
+    const filtered = getFilteredUsers().map((u) => u.username);
+    const excludedUsers = filtered.filter((u) => !selectedUsers.includes(u));
+
     try {
       const payload = {
         title,
@@ -65,6 +107,7 @@ const NewSurvey = () => {
         dueDate: dueDate ? new Date(dueDate) : null,
         durationMin: durationMin ? Number(durationMin) : null,
         questions,
+        excludedUsers, // send excluded list
       };
 
       const response = await fetch(`${API_URL}/admin/surveys`, {
@@ -93,7 +136,6 @@ const NewSurvey = () => {
   return (
     <div className="w-[80%] p-5 flex flex-col gap-5">
       <div className="flex bg-white flex-col gap-5 border-2 border-gray-300 p-5 rounded-md">
-        
         {/* Title */}
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold text-liblack">Survey Title</h3>
@@ -135,13 +177,68 @@ const NewSurvey = () => {
           <h3 className="text-lg font-semibold text-liblack">Audience</h3>
           <select
             value={audience}
-            onChange={(e) => setAudience(e.target.value)}
+            onChange={(e) => {
+              setAudience(e.target.value);
+              setSelectedUsers([]); // reset selected when audience changes
+            }}
             className="border text-liblack border-gray-500 outline-none rounded-md p-2"
           >
             <option value="all">All</option>
             <option value="members">Members</option>
             <option value="admins">Admins</option>
           </select>
+        </div>
+
+        {/* Select Users */}
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold text-liblack">Select Users</h3>
+          <select
+            onChange={(e) => {
+              const username = e.target.value;
+
+              if (username === "__all__") {
+                // Add all users from the current audience
+                const allUsernames = getFilteredUsers().map((u) => u.username);
+                setSelectedUsers(allUsernames);
+              } else if (username === "__clear__") {
+                // Remove all
+                setSelectedUsers([]);
+              } else if (username && !selectedUsers.includes(username)) {
+                // Add individual user
+                setSelectedUsers([...selectedUsers, username]);
+              }
+            }}
+            className="border text-liblack border-gray-500 outline-none rounded-md p-2"
+          >
+            <option value="">-- Select User --</option>
+            <option value="__all__">Add All</option>
+            <option value="__clear__">Remove All</option>
+            {getFilteredUsers().map((u, i) => (
+              <option key={i} value={u.username}>
+                {u.username}
+              </option>
+            ))}
+          </select>
+
+          {/* Selected tags */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedUsers.map((user, idx) => (
+              <span
+                key={idx}
+                className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-2"
+              >
+                {user}
+                <button
+                  onClick={() =>
+                    setSelectedUsers(selectedUsers.filter((u) => u !== user))
+                  }
+                  className="text-red-500"
+                >
+                  <FaTrash size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Due Date & Duration */}
@@ -156,7 +253,9 @@ const NewSurvey = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-liblack">Duration (min)</h3>
+            <h3 className="text-lg font-semibold text-liblack">
+              Duration (min)
+            </h3>
             <input
               type="number"
               placeholder="e.g. 30"
@@ -171,17 +270,24 @@ const NewSurvey = () => {
         <div className="flex flex-col gap-3">
           <h3 className="text-lg font-semibold text-liblack">Questions</h3>
           {questions.map((q, qIndex) => (
-            <div key={qIndex} className="border p-3 rounded-md flex flex-col gap-2">
+            <div
+              key={qIndex}
+              className="border p-3 rounded-md flex flex-col gap-2"
+            >
               <input
                 type="text"
                 placeholder="Enter question text"
                 value={q.q}
-                onChange={(e) => handleQuestionChange(qIndex, "q", e.target.value)}
+                onChange={(e) =>
+                  handleQuestionChange(qIndex, "q", e.target.value)
+                }
                 className="border p-2 rounded-md"
               />
               <select
                 value={q.kind}
-                onChange={(e) => handleQuestionChange(qIndex, "kind", e.target.value)}
+                onChange={(e) =>
+                  handleQuestionChange(qIndex, "kind", e.target.value)
+                }
                 className="border p-2 rounded-md"
               >
                 <option value="text">Text</option>
