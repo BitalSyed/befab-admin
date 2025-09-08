@@ -49,7 +49,7 @@ const HealthMetrics = ({ className, data }) => {
   setMetrics([
     {
       title: "Average Weight",
-      value: `${newMetrics["HealthDataType.WEIGHT"].toFixed(2)} KG`,
+      value: `${newMetrics["HealthDataType.WEIGHT"]?.toFixed(2)} KG`,
       color: "bg-blue-500",
       width: `w-[${(newMetrics["HealthDataType.WEIGHT"]/80.7)*100}%]`,
     },

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 import GoalTrackerTable from "@/components/goal-table";
 import GoalAuditLog from "@/components/goal-management";
+import { AISuggestedGoals } from "@/components/goal-suggested";
 
 const Goals = () => {
   const navigate = useNavigate();
@@ -131,7 +132,8 @@ const Goals = () => {
       </div>
 
       <GoalTrackerTable data={data} setData={setData} users={users} />
-      <GoalAuditLog data={users} />
+      <AISuggestedGoals data={users}/>
+      <GoalAuditLog />
     </div>
   );
 };

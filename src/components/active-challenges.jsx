@@ -46,7 +46,7 @@ const ActiveChallenges = ({ className, data }) => {
         icon: BsFillDropletFill,
     name: e.category,
     participants: e.participants,
-    completion: e.leaderboard.score.toFixed(2),
+    completion: e.leaderboard?.score.toFixed(2)??0,
     status: "Active",
     color: 'bg-blue-100 text-yellow-500 rounded-full box-border text-lg w-8 h-8 p-2'
       }

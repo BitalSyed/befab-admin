@@ -27,6 +27,7 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import { API_URL } from "./cookieUtils";
+import { Link } from "react-router-dom";
 
 const D = {
   user: { name: "shadcn", email: "m@example.com", avatar: FaDumbbell },
@@ -141,9 +142,9 @@ export function AppSidebar({ ...props }) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <a href="#" className="flex justify-start items-center bg-white rounded-md">
+            <Link to="/" className="flex justify-start items-center bg-white rounded-md">
               <img src="/logo.png" alt="Logo" className="w-56 mx-auto py-2" />
-            </a>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
