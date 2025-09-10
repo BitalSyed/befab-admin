@@ -33,6 +33,7 @@ import Messaging from "./pages/Messaging";
 import CreateGoalPage from "./pages/CreateGoalPage";
 import Notifcations from "./pages/Notifcations";
 import ModifySurvey from "./pages/ModifySurvey";
+import AddFood from "./pages/AddFood";
 
 function App() {
   const navigate = useNavigate();
@@ -122,6 +123,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/new-user" element={<NewUser />} />
+                <Route path="/add-food" element={<AddFood />} />
                 <Route path="/news-letters" element={<NewsLetters />} />
                 <Route path="/new-news" element={<NewNewsLetter />} />
                 <Route path="/new-news/:id" element={<NewNewsLetter />} />
