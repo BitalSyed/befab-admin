@@ -7,6 +7,7 @@ const NewUser = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("member");
@@ -26,6 +27,7 @@ const NewUser = () => {
         firstName,
         lastName,
         username: userName+"@befab", 
+        userId,
         email,
         passwordHash: password,
         role,
@@ -93,6 +95,20 @@ const NewUser = () => {
     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
       @Befab
     </span>
+  </div>
+</div>
+
+        {/* User Name */}
+        <div className="flex flex-col gap-1">
+  <h3 className="text-lg font-semibold text-liblack">User ID</h3>
+  <div className="relative w-full">
+    <input
+      type="text"
+      placeholder="User ID"
+      value={userId}
+      onChange={(e) => setUserId(e.target.value)}
+      className="border text-liblack border-gray-500 outline-none rounded-md p-2 w-full pr-16"
+    />
   </div>
 </div>
 
