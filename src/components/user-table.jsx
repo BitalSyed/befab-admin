@@ -28,6 +28,7 @@ export function UserTable({ data, d }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("member");
@@ -38,7 +39,8 @@ export function UserTable({ data, d }) {
   function openEditDialog(userId, userData) {
     setFirstName(userData.firstName);
     setLastName(userData.lastName);
-    setUserName(userData.username.split("@Befab")[0]);
+    setUserName(userData.username.split("@befab")[0]);
+    setUserId(userData.userId);
     setEmail(userData.email);
     setPassword(userData.password);
     setRole(userData.role);
@@ -57,8 +59,9 @@ export function UserTable({ data, d }) {
         token: getCookie("skillrextech_auth"),
         firstName,
         lastName,
-        username: userName+"@Befab",
-        email,
+        username: userName + "@befab",
+        userId,
+        email: email && email.trim() !== "" ? email.trim() : undefined,
         password,
         role,
         isLocked: locked,
@@ -213,7 +216,7 @@ export function UserTable({ data, d }) {
                   </div>
                   <div className="text-sm text-gray-500">{user.email}</div>
                 </TableCell>
-                <TableCell>{user.userId||'N/A'}</TableCell>
+                <TableCell>{user.userId || "N/A"}</TableCell>
                 <TableCell>{user.username}</TableCell>
                 <TableCell>
                   <Badge variant="enabled">
@@ -239,7 +242,7 @@ export function UserTable({ data, d }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => openEditDialog(user._id, user)}
                       >
                         Edit
@@ -259,16 +262,30 @@ export function UserTable({ data, d }) {
       {/* HTML-based Modal */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-xs !z-[101] bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="max-w-lg w-full rounded-2xl bg-white shadow-xl backdrop-blur-sm border border-gray-200 overflow-y-auto max-h-[90vh]" style={{scrollbarWidth: 'thin'}}>
+          <div
+            className="max-w-lg w-full rounded-2xl bg-white shadow-xl backdrop-blur-sm border border-gray-200 overflow-y-auto max-h-[90vh]"
+            style={{ scrollbarWidth: "thin" }}
+          >
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Edit User</h2>
-                <button 
+                <button
                   onClick={() => setIsDialogOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -324,6 +341,21 @@ export function UserTable({ data, d }) {
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                       @Befab
                     </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Record ID
+                  </label>
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      placeholder="Record ID"
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
+                      className="border text-gray-800 border-gray-300 outline-none rounded-md p-2 w-full pr-16"
+                    />
                   </div>
                 </div>
 
