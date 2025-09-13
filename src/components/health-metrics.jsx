@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 
-const HealthMetrics = ({ className, data }) => {
-  const [metrics, setMetrics] = useState([])
+const HealthMetrics = ({ className, data, data1 }) => {
+  const [metrics, setMetrics] = useState([]);
   // [
   //   {
   //     title: "Average Weight",
@@ -29,50 +29,55 @@ const HealthMetrics = ({ className, data }) => {
   //     width: "w-[70%]",
   //   },
   // ];
+  const today = new Date();
+  const formatted = today.toISOString().split("T")[0];
+
   useEffect(() => {
-  if (!data || !data.data) return;
-  
-  const newMetrics = {};
-  
-  Object.entries(data.data).forEach(([dataType, dailyValues]) => {
-    let total = 0;
-    
-    // Sum all the daily values for this data type
-    Object.values(dailyValues).forEach(value => {
-      total += value;
+    if (!data || !data.data || !data1 || !data1.users?.members) return;
+
+    const newMetrics = {};
+
+    console.log(data.data);
+    Object.entries(data.data).forEach(([dataType, dailyValues]) => {
+      let total = 0;
+
+      // Sum all the daily values for this data type
+      // console.log(dailyValues[formatted], dataType, formatted, dailyValues);
+
+      total += dailyValues[formatted];
+
+      newMetrics[dataType] = total / data1.users?.members;
     });
-    
-    newMetrics[dataType] = total;
-  });
-  
-  console.log(newMetrics)
-  setMetrics([
-    {
-      title: "Average Weight",
-      value: `${newMetrics["HealthDataType.WEIGHT"]?.toFixed(2)} KG`,
-      color: "bg-blue-500",
-      width: `w-[${(newMetrics["HealthDataType.WEIGHT"]/80.7)*100}%]`,
-    },
-    {
-      title: "Avg. Resting Heart Rate",
-      value: `${newMetrics["HealthDataType.HEART_RATE"]} bpm`,
-      color: "bg-green-500",
-      width: `w-[${(newMetrics["HealthDataType.HEART_RATE"]/85)*100}%]`,
-    },
-    {
-      title: "Avg. Sleep Duration",
-      value: `${newMetrics["HealthDataType.SLEEP_SESSION"]} min`,
-      color: "bg-purple-500",
-      width: `w-[${(newMetrics["HealthDataType.SLEEP_SESSION"]/8)*100}%]`,
-    },
-    {
-      title: "Avg. Daily Steps",
-      value: `${newMetrics["HealthDataType.STEPS"]}`,
-      color: "bg-yellow-500",
-      width: `w-[${(newMetrics["HealthDataType.STEPS"]/2000)*100}%]`,
-    },
-  ]);
-}, [data]); 
+
+    setMetrics([
+      {
+        title: "Average Weight",
+        value: `${(newMetrics["HealthDataType.WEIGHT"] * 2.20462)?.toFixed(
+          2
+        )} lb`,
+        color: "bg-blue-500",
+        width: `w-[${(newMetrics["HealthDataType.WEIGHT"] / 80.7) * 100}%]`,
+      },
+      {
+        title: "Avg. Resting Heart Rate",
+        value: `${newMetrics["HealthDataType.HEART_RATE"]?.toFixed(2)} bpm`,
+        color: "bg-green-500",
+        width: `w-[${(newMetrics["HealthDataType.HEART_RATE"] / 85) * 100}%]`,
+      },
+      {
+        title: "Avg. Sleep Duration",
+        value: `${newMetrics["HealthDataType.SLEEP_SESSION"]?.toFixed(2)} min`,
+        color: "bg-purple-500",
+        width: `w-[${(newMetrics["HealthDataType.SLEEP_SESSION"] / 8) * 100}%]`,
+      },
+      {
+        title: "Avg. Daily Steps",
+        value: `${newMetrics["HealthDataType.STEPS"]?.toFixed(2)}`,
+        color: "bg-yellow-500",
+        width: `w-[${(newMetrics["HealthDataType.STEPS"] / 2000) * 100}%]`,
+      },
+    ]);
+  }, [data, data1]);
 
   return (
     <div

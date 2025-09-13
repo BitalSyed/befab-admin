@@ -62,12 +62,12 @@ export function FeatureUsage({ className, data }) {
   const [maxValue, setMaxValue] = useState(9000);
 
   useEffect(() => {
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      setChartData(defaultChartData);
-      setChartConfig(defaultChartConfig);
-      setMaxValue(9000);
-      return;
-    }
+    // if (!data || !Array.isArray(data) || data.length === 0) {
+    //   setChartData(defaultChartData);
+    //   setChartConfig(defaultChartConfig);
+    //   setMaxValue(9000);
+    //   return;
+    // }
 
     // Process the incoming data
     const formattedData = data.map(video => ({

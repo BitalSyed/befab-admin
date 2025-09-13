@@ -142,7 +142,7 @@ useEffect(() => {
             {total.users}{" "}
           </CardTitle>
           <div className="text-muted-foreground">
-            {data && ((total.users / data?.users?.length) * 100)}% of total users
+            {data && ((total.users / data?.users?.length) * 100).toFixed(2)}% of total users
           </div>
         </CardFooter>
       </Card>

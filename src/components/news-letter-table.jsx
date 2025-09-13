@@ -30,7 +30,7 @@ export default function NewsletterTable({ data = [] }) {
 
   // slice data for current page
   const currentData = useMemo(() => {
-    console.log(data)
+    console.log(data);
     const start = (currentPage - 1) * rowsPerPage;
     return data.slice(start, start + rowsPerPage);
   }, [data, currentPage]);
@@ -92,7 +92,9 @@ export default function NewsletterTable({ data = [] }) {
               <TableCell className={"max-w-50"}>
                 <div className="font-medium">{item.title}</div>
                 <div className="text-muted-foreground text-sm truncate text-wrap max-w-xl">
-                  {item.description}
+                  {item.description?.length > 100
+                    ? item.description.slice(0, 100) + "..."
+                    : item.description}
                 </div>
               </TableCell>
               <TableCell>
@@ -141,8 +143,14 @@ export default function NewsletterTable({ data = [] }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={()=>navigate('/new-news/'+item._id)}>Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={()=>deleteLetter(item._id)}>Delete</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/new-news/" + item._id)}
+                    >
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => deleteLetter(item._id)}>
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

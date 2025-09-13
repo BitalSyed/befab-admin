@@ -226,7 +226,7 @@ const Dashboard = () => {
       </div> */}
       <div className="px-4 lg:px-6">
         <div className="flex flex-wrap lg:flex-nowrap gap-2 justify-center lg:justify-between">
-          <HealthMetrics data={data} title="" className="w-full lg:w-[35%]" />
+          <HealthMetrics data={data} data1={data1} title="" className="w-full lg:w-[35%]" />
           <ActiveChallenges data={data1} className="w-full lg:w-[65%]" />
         </div>
       </div>

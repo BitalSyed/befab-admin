@@ -48,12 +48,12 @@ export default function FitnessDashboard({ data }) {
             2
           ) || 0,
         distance:
-          data.data["HealthDataType.DISTANCE_DELTA"][dateStr].toFixed(2) || 0,
-        workouts: data.data["HealthDataType.WORKOUTS"][dateStr] || 0,
-        sleep: data.data["HealthDataType.SLEEP_SESSION"][dateStr] || 0,
-        heartRate: data.data["HealthDataType.HEART_RATE"][dateStr] || 0,
-        bmi: data.data["HealthDataType.BODY_MASS_INDEX"][dateStr] || 0,
-        fat: data.data["HealthDataType.BODY_FAT_PERCENTAGE"][dateStr] || 0,
+          (data.data["HealthDataType.DISTANCE_DELTA"][dateStr]*0.621371).toFixed(2) || 0,
+        workouts: data.data["HealthDataType.WORKOUTS"][dateStr].toFixed(2) || 0,
+        sleep: data.data["HealthDataType.SLEEP_SESSION"][dateStr].toFixed(2) || 0,
+        heartRate: data.data["HealthDataType.HEART_RATE"][dateStr].toFixed(2) || 0,
+        bmi: data.data["HealthDataType.BODY_MASS_INDEX"][dateStr].toFixed(2) || 0,
+        fat: data.data["HealthDataType.BODY_FAT_PERCENTAGE"][dateStr].toFixed(2) || 0,
       };
     });
 
