@@ -1,14 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "react-toastify";
 import { API_URL, getCookie } from "@/components/cookieUtils";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateGoalPage() {
   const [form, setForm] = useState({
@@ -56,6 +69,8 @@ export default function CreateGoalPage() {
       toast.error("An error occurred while creating the goal.");
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
@@ -121,7 +136,9 @@ export default function CreateGoalPage() {
                 <SelectContent>
                   <SelectItem value="Steps">Steps</SelectItem>
                   <SelectItem value="Distance">Distance</SelectItem>
-                  <SelectItem value="Calories Burned">Calories Burned</SelectItem>
+                  <SelectItem value="Calories Burned">
+                    Calories Burned
+                  </SelectItem>
                   <SelectItem value="Calories Taken">Calories Taken</SelectItem>
                   <SelectItem value="Water Intake">Water Intake</SelectItem>
                 </SelectContent>
@@ -129,9 +146,16 @@ export default function CreateGoalPage() {
             </div>
           </CardContent>
 
-          <CardFooter>
+          <CardFooter className={"flex flex-col"}>
             <Button type="submit" className="w-full mt-5">
               Save Goal
+            </Button>
+            <Button
+              onClick={() => navigate("/goals")}
+              type="button"
+              className="w-full mt-5 bg-[#732e26]"
+            >
+              Go Back
             </Button>
           </CardFooter>
         </form>
