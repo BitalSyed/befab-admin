@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { API_URL, getCookie } from "@/components/cookieUtils";
 import { toast } from "react-toastify";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -77,6 +77,10 @@ export default function SurveyResponsesPage() {
       }
     };
     if (confirm("Are you sure to delete that resonse?")) fetchSurvey();
+  }
+  const navigate = useNavigate();
+  function EditResponse(i) {
+    navigate(`/surveys/edit/${id}/${i}`);
   }
 
   // Filter responses based on search
@@ -190,7 +194,13 @@ export default function SurveyResponsesPage() {
                       onClick={() => DeleteResponse(resp._id)}
                       className="font-semibold text-white bg-red-800 rounded-md px-2 py-1 cursor-pointer"
                     >
-                      Delete Resonse (Deleting May Require new Response)
+                      Delete Response (Deleting May Require new Response)
+                    </span>
+                    <span
+                      onClick={() => EditResponse(resp._id)}
+                      className="font-semibold text-white bg-green-800 rounded-md px-2 py-1 cursor-pointer"
+                    >
+                      Edit
                     </span>
                   </CardHeader>
                   {isExpanded && (
