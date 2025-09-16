@@ -1,6 +1,6 @@
 import { API_URL, getCookie } from "@/components/cookieUtils";
 import React, { useEffect, useState } from "react";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaTrash } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -12,7 +12,41 @@ const NewNewsLetter = () => {
   const [status, setStatus] = useState("draft"); // default draft
   const [scheduleDate, setScheduleDate] = useState("");
   const [Case, setCase] = useState(0);
+  const [data, setData] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const { id } = useParams();
+
+  useEffect(() => {
+    const fetchSurvey = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          setData(result);
+          console.log(result);
+        }
+      } catch (error) {
+        console.error("Error fetching survey:", error);
+        toast.error("An error occurred. Please try again.");
+      }
+    };
+
+    fetchSurvey();
+  }, []);
+
+  const getFilteredUsers = () => {
+    return data; // all
+  };
 
   const publishNews = () => {
     if (status === "scheduled") {
@@ -29,6 +63,9 @@ const NewNewsLetter = () => {
     const formData = new FormData();
     formData.append("token", getCookie("skillrextech_auth"));
     formData.append("title", title);
+    const filtered = getFilteredUsers().map((u) => u.username);
+    const excludedUsers = filtered.filter((u) => !selectedUsers.includes(u));
+    formData.append("audience", excludedUsers);
     formData.append("description", description);
     formData.append("status", status);
 
@@ -40,7 +77,7 @@ const NewNewsLetter = () => {
       formData.append("picture", picture);
     }
 
-    if(id){
+    if (id) {
       formData.append("id", id);
     }
 
@@ -85,7 +122,7 @@ const NewNewsLetter = () => {
           setDescription(data.description || "");
           setStatus(data.status || "");
           setScheduleDate(data.schedule || "");
-          setCase(1)
+          setCase(1);
           // optionally handle picture if needed
         }
       } catch (error) {
@@ -98,8 +135,32 @@ const NewNewsLetter = () => {
   }, [id]);
 
   return (
-    <div className="w-[80%] p-5 flex flex-col gap-5">
-      <div className="flex bg-white flex-col gap-5 border-2 border-gray-300 p-5 rounded-md">
+    <div className="w-[100%] p-5 flex flex-col gap-5">
+      <button
+        onClick={() => navigate("/news-letters")}
+        class="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group ml-auto cursor-pointer shadow-lg"
+        type="button"
+      >
+        <div class="bg-[#732e26] rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1024 1024"
+            height="25px"
+            width="25px"
+          >
+            <path
+              d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+              fill="#ffffff"
+            ></path>
+            <path
+              d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+              fill="#ffffff"
+            ></path>
+          </svg>
+        </div>
+        <p class="translate-x-2">Back</p>
+      </button>
+      <div className="w-[80%] flex bg-white flex-col gap-5 border-2 border-gray-300 p-5 rounded-md">
         {/* Title */}
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold text-liblack">Title</h3>
@@ -137,6 +198,57 @@ const NewNewsLetter = () => {
               Selected: {picture.name}
             </p>
           )}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold text-liblack">Select Users</h3>
+          <select
+            onChange={(e) => {
+              const username = e.target.value;
+
+              if (username === "__all__") {
+                // Add all users from the current audience
+                const allUsernames = getFilteredUsers().map((u) => u.username);
+                setSelectedUsers(allUsernames);
+              } else if (username === "__clear__") {
+                // Remove all
+                setSelectedUsers([]);
+              } else if (username && !selectedUsers.includes(username)) {
+                // Add individual user
+                setSelectedUsers([...selectedUsers, username]);
+              }
+            }}
+            className="border text-liblack border-gray-500 outline-none rounded-md p-2"
+          >
+            <option value="">-- Select User --</option>
+            <option value="__all__">Add All</option>
+            <option value="__clear__">Remove All</option>
+            {getFilteredUsers().map((u, i) => (
+              <option key={i} value={u.username}>
+                {u.username}
+              </option>
+            ))}
+          </select>
+
+          {/* Selected tags */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedUsers.map((user, idx) => (
+              <span
+                key={idx}
+                className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-2"
+              >
+                {user}
+                <button
+                  onClick={() =>
+                    setSelectedUsers(selectedUsers.filter((u) => u !== user))
+                  }
+                  className="text-red-500"
+                >
+                  <FaTrash size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Status */}
