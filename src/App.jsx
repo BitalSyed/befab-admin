@@ -34,6 +34,7 @@ import CreateGoalPage from "./pages/CreateGoalPage";
 import Notifcations from "./pages/Notifcations";
 import ModifySurvey from "./pages/ModifySurvey";
 import AddFood from "./pages/AddFood";
+import EditSurvey from "./pages/EditSurvey";
 
 function App() {
   const navigate = useNavigate();
@@ -142,6 +143,7 @@ function App() {
                 <Route path="/surveys/modify/:id" element={<ModifySurvey d={data} />} />
                 <Route path="/surveys/:id" element={<SurveyResponsesPage d={data} />} />
                 <Route path="/surveys/take/:id" element={<TakeSurveyPage d={data} />} />
+                <Route path="/surveys/edit/:id/:i" element={<EditSurvey d={data} />} />
                 <Route path="/nutrition" element={<Nutrition />} />
                 <Route path="/fitness" element={<Fitness />} />
                 <Route path="/messaging-management" element={<Messaging userId={data._id} />} />
