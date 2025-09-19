@@ -3,15 +3,18 @@ import React, { useEffect, useState } from "react";
 import { FaCheck, FaTrash } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import DeepDiveForm from "@/components/DeepDiveForm";
 
 const NewNewsLetter = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [picture, setPicture] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
   const [status, setStatus] = useState("draft"); // default draft
   const [scheduleDate, setScheduleDate] = useState("");
   const [Case, setCase] = useState(0);
+  const [deepDives, setDeepDives] = useState([]);
   const [data, setData] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const { id } = useParams();
@@ -77,14 +80,27 @@ const NewNewsLetter = () => {
       formData.append("picture", picture);
     }
 
+    if (pdfFile) {
+      formData.append("newsletterPdf", pdfFile);
+    }
+
     if (id) {
       formData.append("id", id);
     }
 
+    deepDives.forEach((dd, index) => {
+      if (dd.title && dd.description && dd.picture && dd.pdfFile) {
+        formData.append(`deepDives[${index}][title]`, dd.title);
+        formData.append(`deepDives[${index}][description]`, dd.description);
+        formData.append(`deepDives[${index}][picture]`, dd.picture);
+        formData.append(`deepDives[${index}][pdf]`, dd.pdfFile);
+      }
+    });
+
     fetch(`${API_URL}/admin/newsletters`, {
       method: "POST",
       headers: { Authorization: `Bearer ${getCookie("skillrextech_auth")}` },
-      body: formData, // sending multipart/form-data
+      body: formData,
     })
       .then((response) => response.json())
       .then((data) => {
@@ -92,7 +108,7 @@ const NewNewsLetter = () => {
           toast.error(data.error);
         } else {
           toast.success(data.message);
-          navigate("/news-letters"); // move after success
+          navigate("/news-letters");
         }
       })
       .catch((error) => {
@@ -133,6 +149,25 @@ const NewNewsLetter = () => {
 
     fetchNewsletter();
   }, [id]);
+
+  // Deep Dive handlers
+  const handleAddDeepDive = () => {
+    if (deepDives.length >= 3) return;
+    setDeepDives([
+      ...deepDives,
+      { title: "", description: "", picture: null, pdfFile: null },
+    ]);
+  };
+
+  const handleDeepDiveChange = (index, values) => {
+    setDeepDives((prev) =>
+      prev.map((dd, i) => (i === index ? { ...dd, ...values } : dd))
+    );
+  };
+
+  const handleRemoveDeepDive = (index) => {
+    setDeepDives((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="w-[100%] p-5 flex flex-col gap-5">
@@ -200,6 +235,22 @@ const NewNewsLetter = () => {
           )}
         </div>
 
+        {/* PDF */}
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold text-liblack">Newsletter PDF</h3>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setPdfFile(e.target.files[0])}
+            className="border text-liblack border-gray-500 outline-none rounded-md p-2"
+          />
+          {pdfFile && (
+            <p className="text-sm text-gray-600 mt-1">
+              Selected: {pdfFile.name}
+            </p>
+          )}
+        </div>
+
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold text-liblack">Select Users</h3>
           <select
@@ -263,6 +314,47 @@ const NewNewsLetter = () => {
             <option value="published">Published</option>
             <option value="scheduled">Scheduled</option>
           </select>
+        </div>
+
+        {/* Deep Dive Content Controls */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleAddDeepDive}
+            disabled={deepDives.length >= 3}
+            className={`text-sm font-medium p-2 rounded-md text-white ${
+              deepDives.length >= 3
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            Add Deep Dive Content{" "}
+            {deepDives.length > 0 ? `(${deepDives.length}/3)` : ""}
+          </button>
+        </div>
+
+        {/* Deep Dive Forms List */}
+        <div className="flex flex-col gap-5">
+          {deepDives.map((dd, idx) => (
+            <div key={idx} className="flex flex-col">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-md font-semibold text-liblack">
+                  Deep Dive #{idx + 1}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveDeepDive(idx)}
+                  className="text-sm font-medium px-3 py-1 rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+              <DeepDiveForm
+                initialValues={dd}
+                onChange={(values) => handleDeepDiveChange(idx, values)}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Schedule Date (only if scheduled) */}
