@@ -9,6 +9,7 @@ const NewNewsLetter = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [picture, setPicture] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
   const [status, setStatus] = useState("draft"); // default draft
   const [scheduleDate, setScheduleDate] = useState("");
   const [Case, setCase] = useState(0);
@@ -75,6 +76,10 @@ const NewNewsLetter = () => {
 
     if (picture) {
       formData.append("picture", picture);
+    }
+
+    if (pdfFile) {
+      formData.append("newsletterPdf", pdfFile);
     }
 
     if (id) {
@@ -196,6 +201,22 @@ const NewNewsLetter = () => {
           {picture && (
             <p className="text-sm text-gray-600 mt-1">
               Selected: {picture.name}
+            </p>
+          )}
+        </div>
+
+        {/* PDF */}
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold text-liblack">Newsletter PDF</h3>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setPdfFile(e.target.files[0])}
+            className="border text-liblack border-gray-500 outline-none rounded-md p-2"
+          />
+          {pdfFile && (
+            <p className="text-sm text-gray-600 mt-1">
+              Selected: {pdfFile.name}
             </p>
           )}
         </div>
