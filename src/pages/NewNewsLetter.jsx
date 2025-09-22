@@ -4,6 +4,7 @@ import { FaCheck, FaTrash } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import DeepDiveForm from "@/components/DeepDiveForm";
+import uploadFileToFirebase from "@/helper/uploadFileToFirebase";
 
 const NewNewsLetter = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const NewNewsLetter = () => {
   const [data, setData] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const { id } = useParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchSurvey = async () => {
@@ -51,70 +53,72 @@ const NewNewsLetter = () => {
     return data; // all
   };
 
-  const publishNews = () => {
-    if (status === "scheduled") {
-      if (!scheduleDate) {
-        toast.error("Please select a schedule date.");
-        return;
-      }
-      if (new Date(scheduleDate) <= new Date()) {
-        toast.error("Schedule date must be in the future.");
-        return;
-      }
-    }
+  const publishNews = async () => {
+    setIsLoading(true);
+    try {
+      const pictureUrl = await uploadFileToFirebase(
+        picture,
+        "NewsletterPictures"
+      );
+      const pdfUrl = await uploadFileToFirebase(pdfFile, "NewsletterPdfs");
 
-    const formData = new FormData();
-    formData.append("token", getCookie("skillrextech_auth"));
-    formData.append("title", title);
-    const filtered = getFilteredUsers().map((u) => u.username);
-    const excludedUsers = filtered.filter((u) => !selectedUsers.includes(u));
-    formData.append("audience", excludedUsers);
-    formData.append("description", description);
-    formData.append("status", status);
+      const deepDiveUrls = await Promise.all(
+        deepDives.map(async (dd) => {
+          const ddPictureUrl = await uploadFileToFirebase(
+            dd.picture,
+            "DeepDivePictures"
+          );
+          const ddPdfUrl = await uploadFileToFirebase(
+            dd.pdfFile,
+            "DeepDivePdfs"
+          );
+          return {
+            title: dd.title,
+            description: dd.description,
+            picture: ddPictureUrl,
+            pdf: ddPdfUrl,
+          };
+        })
+      );
 
-    if (status === "scheduled" && scheduleDate) {
-      formData.append("schedule", scheduleDate);
-    }
+      const payload = {
+        token: getCookie("skillrextech_auth"),
+        title,
+        description,
+        status,
+        scheduledAt: status === "scheduled" ? scheduleDate : undefined, // backend expects scheduledAt
+        audience: getFilteredUsers()
+          .map((u) => u.username)
+          .filter((u) => !selectedUsers.includes(u)),
+        picture: pictureUrl,
+        pdf: pdfUrl,
+        deepDives: deepDiveUrls,
+        id: id || undefined,
+      };
 
-    if (picture) {
-      formData.append("picture", picture);
-    }
-
-    if (pdfFile) {
-      formData.append("newsletterPdf", pdfFile);
-    }
-
-    if (id) {
-      formData.append("id", id);
-    }
-
-    deepDives.forEach((dd, index) => {
-      if (dd.title && dd.description && dd.picture && dd.pdfFile) {
-        formData.append(`deepDives[${index}][title]`, dd.title);
-        formData.append(`deepDives[${index}][description]`, dd.description);
-        formData.append(`deepDives[${index}][picture]`, dd.picture);
-        formData.append(`deepDives[${index}][pdf]`, dd.pdfFile);
-      }
-    });
-
-    fetch(`${API_URL}/admin/newsletters`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${getCookie("skillrextech_auth")}` },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success(data.message);
-          navigate("/news-letters");
-        }
-      })
-      .catch((error) => {
-        console.error("Error adding newsletter:", error);
-        toast.error("An error occurred while adding the newsletter.");
+      const response = await fetch(`${API_URL}/admin/newsletters`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("skillrextech_auth")}`,
+        },
+        body: JSON.stringify(payload),
       });
+
+      const data = await response.json();
+
+      if (data.error) {
+        toast.error(data.error);
+      } else {
+        toast.success(data.message);
+        navigate("/news-letters");
+      }
+    } catch (err) {
+      console.error("Error publishing newsletter:", err);
+      toast.error("An error occurred while publishing.");
+    } finally {
+      setIsLoading(false); // stop loading
+    }
   };
 
   useEffect(() => {
@@ -377,9 +381,36 @@ const NewNewsLetter = () => {
         <div className="flex gap-3">
           <button
             onClick={publishNews}
-            className="text-sm font-medium p-2 rounded-md text-white bg-green-500 flex items-center gap-2 cursor-pointer"
+            disabled={isLoading} // disable while loading
+            className={`text-sm font-medium p-2 rounded-md text-white flex items-center gap-2 ${
+              isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500"
+            }`}
           >
-            <FaCheck /> Save Newsletter
+            {isLoading ? (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+              </svg>
+            ) : (
+              <FaCheck />
+            )}
+            {isLoading ? "Saving..." : "Save Newsletter"}
           </button>
         </div>
       </div>
