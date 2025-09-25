@@ -86,10 +86,10 @@ const NewNewsLetter = () => {
         title,
         description,
         status,
-        scheduledAt: status === "scheduled" ? scheduleDate : undefined, // backend expects scheduledAt
+        scheduledAt: status === "scheduled" ? scheduleDate : undefined,
         audience: getFilteredUsers()
           .map((u) => u.username)
-          .filter((u) => !selectedUsers.includes(u)),
+          .filter((u) => selectedUsers.includes(u)),
         picture: pictureUrl,
         pdf: pdfUrl,
         deepDives: deepDiveUrls,
@@ -143,7 +143,22 @@ const NewNewsLetter = () => {
           setStatus(data.status || "");
           setScheduleDate(data.schedule || "");
           setCase(1);
-          // optionally handle picture if needed
+
+          setPicture(data.picture || null);
+          setPdfFile(data.pdf || null);
+
+          setDeepDives(
+            (data.deepDives || []).map((dd) => ({
+              title: dd.title || "",
+              description: dd.description || "",
+              picture: dd.picture || null,
+              pdfFile: dd.pdf || null,
+            }))
+          );
+
+          if (Array.isArray(data.includedUsers)) {
+            setSelectedUsers(data.includedUsers);
+          }
         }
       } catch (error) {
         console.error("Error fetching newsletter:", error);
@@ -156,7 +171,7 @@ const NewNewsLetter = () => {
 
   // Deep Dive handlers
   const handleAddDeepDive = () => {
-    if (deepDives.length >= 3) return;
+    if (deepDives.length >= 4) return;
     setDeepDives([
       ...deepDives,
       { title: "", description: "", picture: null, pdfFile: null },
@@ -232,11 +247,20 @@ const NewNewsLetter = () => {
             onChange={(e) => setPicture(e.target.files[0])}
             className="border text-liblack border-gray-500 outline-none rounded-md p-2"
           />
-          {picture && (
+          {picture && typeof picture === "string" ? (
+            <a
+              href={picture}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 mt-1 underline"
+            >
+              View current picture
+            </a>
+          ) : picture ? (
             <p className="text-sm text-gray-600 mt-1">
               Selected: {picture.name}
             </p>
-          )}
+          ) : null}
         </div>
 
         {/* PDF */}
@@ -248,11 +272,20 @@ const NewNewsLetter = () => {
             onChange={(e) => setPdfFile(e.target.files[0])}
             className="border text-liblack border-gray-500 outline-none rounded-md p-2"
           />
-          {pdfFile && (
+          {pdfFile && typeof pdfFile === "string" ? (
+            <a
+              href={pdfFile}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 mt-1 underline"
+            >
+              View current PDF
+            </a>
+          ) : pdfFile ? (
             <p className="text-sm text-gray-600 mt-1">
               Selected: {pdfFile.name}
             </p>
-          )}
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -325,15 +358,15 @@ const NewNewsLetter = () => {
           <button
             type="button"
             onClick={handleAddDeepDive}
-            disabled={deepDives.length >= 3}
+            disabled={deepDives.length >= 4}
             className={`text-sm font-medium p-2 rounded-md text-white ${
-              deepDives.length >= 3
+              deepDives.length >= 4
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             Add Deep Dive Content{" "}
-            {deepDives.length > 0 ? `(${deepDives.length}/3)` : ""}
+            {deepDives.length > 0 ? `(${deepDives.length}/4)` : ""}
           </button>
         </div>
 
