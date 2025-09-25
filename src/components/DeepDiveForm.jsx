@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-const DeepDiveForm = ({ initialValues = {}, onChange, readOnly = false, className = "" }) => {
+const DeepDiveForm = ({
+  initialValues = {},
+  onChange,
+  readOnly = false,
+  className = "",
+}) => {
   const [title, setTitle] = useState(initialValues.title || "");
-  const [description, setDescription] = useState(initialValues.description || "");
+  const [description, setDescription] = useState(
+    initialValues.description || ""
+  );
   const [picture, setPicture] = useState(initialValues.picture || null);
   const [pdfFile, setPdfFile] = useState(initialValues.pdfFile || null);
 
@@ -19,7 +26,9 @@ const DeepDiveForm = ({ initialValues = {}, onChange, readOnly = false, classNam
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-liblack">Deep Dive Content</h2>
+        <h2 className="text-xl font-semibold text-liblack">
+          Deep Dive Content
+        </h2>
       </div>
 
       {/* Title */}
@@ -57,9 +66,19 @@ const DeepDiveForm = ({ initialValues = {}, onChange, readOnly = false, classNam
           className="border text-liblack border-gray-500 outline-none rounded-md p-2"
           disabled={readOnly}
         />
-        {picture && (
+
+        {picture && typeof picture === "string" ? (
+          <a
+            href={picture}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 mt-1 underline"
+          >
+            View current picture
+          </a>
+        ) : picture ? (
           <p className="text-sm text-gray-600 mt-1">Selected: {picture.name}</p>
-        )}
+        ) : null}
       </div>
 
       {/* PDF */}
@@ -72,9 +91,19 @@ const DeepDiveForm = ({ initialValues = {}, onChange, readOnly = false, classNam
           className="border text-liblack border-gray-500 outline-none rounded-md p-2"
           disabled={readOnly}
         />
-        {pdfFile && (
+
+        {pdfFile && typeof pdfFile === "string" ? (
+          <a
+            href={pdfFile}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 mt-1 underline"
+          >
+            View current PDF
+          </a>
+        ) : pdfFile ? (
           <p className="text-sm text-gray-600 mt-1">Selected: {pdfFile.name}</p>
-        )}
+        ) : null}
       </div>
     </div>
   );
